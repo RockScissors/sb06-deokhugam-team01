@@ -12,4 +12,8 @@ public interface BookService {
 
     BookDto updateBook(BookUpdateRequest bookUpdateRequest, @Nullable MultipartFile file);
 
+    void deleteBookById(String id);
+
+    void hardDeleteBookById(String id);
+
 }
