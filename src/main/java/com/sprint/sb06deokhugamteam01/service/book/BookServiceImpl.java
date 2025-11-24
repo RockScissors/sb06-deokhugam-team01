@@ -17,4 +17,14 @@ public class BookServiceImpl implements  BookService {
     public BookDto updateBook(BookUpdateRequest bookUpdateRequest, @Nullable MultipartFile file) {
         return null;
     }
+
+    @Override
+    public void deleteBookById(String id) {
+
+    }
+
+    @Override
+    public void hardDeleteBookById(String id) {
+
+    }
 }
