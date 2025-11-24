@@ -5,6 +5,7 @@ import com.sprint.sb06deokhugamteam01.domain.Review;
 import com.sprint.sb06deokhugamteam01.domain.User;
 import com.sprint.sb06deokhugamteam01.dto.review.ReviewCreateRequest;
 import com.sprint.sb06deokhugamteam01.dto.review.ReviewDto;
+import com.sprint.sb06deokhugamteam01.dto.review.ReviewOperationRequest;
 import com.sprint.sb06deokhugamteam01.repository.BookRepository;
 import com.sprint.sb06deokhugamteam01.repository.ReviewRepository;
 import com.sprint.sb06deokhugamteam01.repository.UserRepository;
@@ -23,7 +24,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ReviewServiceTddTest {
@@ -40,14 +41,31 @@ class ReviewServiceTddTest {
     @InjectMocks
     private ReviewServiceImpl reviewService;
 
+    private final UUID reviewId = UUID.randomUUID();
     private final UUID userId = UUID.randomUUID();
     private final UUID bookId = UUID.randomUUID();
 
+    Review testReview;
     User testUser;
     Book testBook;
+    ReviewOperationRequest testReviewOperationRequest;
 
     @BeforeEach
     void setUp(){
+
+        testReview = Review.builder()
+                .id(reviewId)
+                .user(testUser)
+                .book(testBook)
+                .rating(4)
+                .content("내용")
+                .likeCount(1)
+                .commentCount(2)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .isActive(true)
+                .build();
+
         testUser = User.builder()
                 .id(userId)
                 .email("testUser@testUser.com")
@@ -68,6 +86,11 @@ class ReviewServiceTddTest {
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .isActive(true)
+                .build();
+
+        testReviewOperationRequest = ReviewOperationRequest.builder()
+                .reviewId(reviewId)
+                .userId(userId)
                 .build();
     }
 
@@ -102,7 +125,7 @@ class ReviewServiceTddTest {
         when(reviewRepository.save(any(Review.class))).thenReturn(mockSavedReview);
 
         // when
-        ReviewDto response = reviewService.createReview(request); // createReview()가 항상 null을 반환함.
+        ReviewDto response = reviewService.createReview(request);
 
         // then
         assertThat(response).isNotNull();
@@ -111,6 +134,26 @@ class ReviewServiceTddTest {
         assertThat(response.userId()).isEqualTo(userId);
         assertThat(response.content()).isEqualTo("테스트내용");
         assertThat(response.rating()).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("getReview 메서드는 호출 시 ReviewDto를 반환한다.")
+    void getReview_TDD(){
+
+        // given
+        when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(testReview));
+
+        // when
+        ReviewDto result = reviewService.getReview(testReviewOperationRequest);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo(reviewId);
+        assertThat(result.userId()).isEqualTo(userId);
+        assertThat(result.bookTitle()).isEqualTo(testBook.getTitle());
+        assertThat(result.content()).isEqualTo("내용");
+
+        verify(reviewRepository, times(1)).findById(reviewId);
     }
 
 }

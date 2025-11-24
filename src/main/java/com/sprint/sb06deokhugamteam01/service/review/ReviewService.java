@@ -13,7 +13,7 @@ public interface ReviewService {
 
     ReviewDto createReview(ReviewCreateRequest request);
 
-    ReviewDto getReviewById(ReviewOperationRequest request);
+    ReviewDto getReview(ReviewOperationRequest request);
 
     Slice<ReviewDto> getReviews(); // TODO 페이지네이션 조회 요청 DTO 추가
 

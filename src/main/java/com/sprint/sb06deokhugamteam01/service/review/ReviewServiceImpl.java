@@ -49,7 +49,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public ReviewDto getReviewById(ReviewOperationRequest request) {
+    public ReviewDto getReview(ReviewOperationRequest request) {
         return null;
     }
 
