@@ -1,43 +1,66 @@
 package com.sprint.sb06deokhugamteam01.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
 
+import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+@EntityListeners(AuditingEntityListener.class)
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "comments")
 public class Comment {
 
     @Id
-    @Column
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Lob
-    private String content;
-
+    @CreatedDate
+    @Column(updatable = false, nullable = false)
     private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    @Column(nullable = false)
     private boolean isActive;
 
-    @ManyToOne
-    @JoinColumn(name = "review_id")
+
+    @Column(length = 500, nullable = false)
+    private String content;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "review_id", updatable = false, nullable =  false)
     private Review review;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", updatable = false, nullable =  false)
     private User user;
 
 
+    @Builder
+    public Comment(String content, Review review, User user) {
+        this.content = content;
+        this.review = review;
+        this.user = user;
+        this.isActive = true;
+    }
 
+    public void update(String newContent) {
+        if (newContent != null && !newContent.equals(this.content)) {
+            this.content = newContent;
+        }
+    }
 
+    // 논리 삭제 편의를 위한 엔티티 내부 메소드
+    public void delete() {
+        this.isActive = false;
+    }
 }
