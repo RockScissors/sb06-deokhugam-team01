@@ -49,8 +49,15 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ReviewDto getReview(ReviewOperationRequest request) {
-        return null;
+        userRepository.findById(request.userId()) // TODO 커스텀 예외로 대체
+                .orElseThrow(() -> new IllegalArgumentException("해당 정보를 가진 사용자가 존재하지 않습니다."));
+
+        Review review = reviewRepository.findById(request.reviewId()) // TODO 커스텀 예외로 대체
+                .orElseThrow(() -> new IllegalArgumentException("해당 정보를 가진 리뷰가 존재하지 않습니다."));
+
+        return ReviewDto.from(review);
     }
 
     @Override

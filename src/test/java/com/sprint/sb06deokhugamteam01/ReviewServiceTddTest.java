@@ -53,19 +53,6 @@ class ReviewServiceTddTest {
     @BeforeEach
     void setUp(){
 
-        testReview = Review.builder()
-                .id(reviewId)
-                .user(testUser)
-                .book(testBook)
-                .rating(4)
-                .content("내용")
-                .likeCount(1)
-                .commentCount(2)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .isActive(true)
-                .build();
-
         testUser = User.builder()
                 .id(userId)
                 .email("testUser@testUser.com")
@@ -83,6 +70,19 @@ class ReviewServiceTddTest {
                 .publishedDate(LocalDateTime.now())
                 .reviewCount(10)
                 .rating(4.5)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .isActive(true)
+                .build();
+
+        testReview = Review.builder()
+                .id(reviewId)
+                .user(testUser)
+                .book(testBook)
+                .rating(4)
+                .content("내용")
+                .likeCount(1)
+                .commentCount(2)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .isActive(true)
@@ -142,16 +142,17 @@ class ReviewServiceTddTest {
 
         // given
         when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(testReview));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
 
         // when
-        ReviewDto result = reviewService.getReview(testReviewOperationRequest);
+        ReviewDto response = reviewService.getReview(testReviewOperationRequest);
 
         // then
-        assertThat(result).isNotNull();
-        assertThat(result.id()).isEqualTo(reviewId);
-        assertThat(result.userId()).isEqualTo(userId);
-        assertThat(result.bookTitle()).isEqualTo(testBook.getTitle());
-        assertThat(result.content()).isEqualTo("내용");
+        assertThat(response).isNotNull();
+        assertThat(response.id()).isEqualTo(reviewId);
+        assertThat(response.userId()).isEqualTo(userId);
+        assertThat(response.bookTitle()).isEqualTo(testBook.getTitle());
+        assertThat(response.content()).isEqualTo("내용");
 
         verify(reviewRepository, times(1)).findById(reviewId);
     }
