@@ -59,11 +59,19 @@ public class BookServiceImpl implements  BookService {
     @Override
     public BookDto updateBook(UUID id, BookUpdateRequest bookUpdateRequest, @Nullable MultipartFile file) {
 
-        if (!bookRepository.existsById(id)) {
-            throw new NoSuchBookException("존재하지 않는 도서입니다.");
-        }
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new NoSuchBookException("존재하지 않는 도서입니다."));
 
-        return null;
+        book.updateBook(
+                bookUpdateRequest.title(),
+                bookUpdateRequest.author(),
+                bookUpdateRequest.description(),
+                bookUpdateRequest.publisher(),
+                bookUpdateRequest.publishedDate()
+        );
+
+        return bookMapper.toDto(book);
+
     }
 
     @Override
