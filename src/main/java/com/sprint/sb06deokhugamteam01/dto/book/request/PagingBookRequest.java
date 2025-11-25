@@ -8,9 +8,15 @@ import java.time.LocalDateTime;
 public record PagingBookRequest(
      String keyword,
      String orderBy,
-     String direction,
+     SortDirection sortDirection,
      String cursor,
      LocalDateTime after,
      Integer limit
 ) {
+
+    public enum SortDirection {
+        ASC,
+        DESC
+    }
+
 }
