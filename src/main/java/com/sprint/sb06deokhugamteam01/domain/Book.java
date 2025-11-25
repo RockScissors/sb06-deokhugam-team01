@@ -74,4 +74,8 @@ public class Book {
         this.publishedDate = publishedDate;
     }
 
+    public void softDelete() {
+        this.isActive = false;
+    }
+
 }

@@ -74,13 +74,26 @@ public class BookServiceImpl implements  BookService {
 
     }
 
+    @Transactional
     @Override
     public void deleteBookById(UUID id) {
 
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new NoSuchBookException("존재하지 않는 도서입니다."));
+
+        book.softDelete();
+
     }
 
+    @Transactional
     @Override
     public void hardDeleteBookById(UUID id) {
+
+        if (!bookRepository.existsById(id)) {
+            throw new NoSuchBookException("존재하지 않는 도서입니다.");
+        }
+
+        bookRepository.deleteById(id);
 
     }
 }
