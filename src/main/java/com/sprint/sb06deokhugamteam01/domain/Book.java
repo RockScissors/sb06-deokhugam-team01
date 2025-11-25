@@ -66,4 +66,12 @@ public class Book {
 
     }
 
+    public void updateBook(String title, String author, String description, String publisher, LocalDate publishedDate) {
+        this.title = title;
+        this.author = author;
+        this.description = description;
+        this.publisher = publisher;
+        this.publishedDate = publishedDate;
+    }
+
 }
