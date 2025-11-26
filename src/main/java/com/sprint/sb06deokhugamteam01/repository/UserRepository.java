@@ -1,6 +1,7 @@
 package com.sprint.sb06deokhugamteam01.repository;
 
 import com.sprint.sb06deokhugamteam01.domain.User;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.Modifying;
@@ -15,5 +16,5 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Modifying
     @Query("delete from User u where u.deletedAt < :cutoff")
-    void deleteAllSoftDeletedBefore(java.time.LocalDateTime cutoff);
+    void deleteAllSoftDeletedBefore(LocalDateTime cutoff);
 }

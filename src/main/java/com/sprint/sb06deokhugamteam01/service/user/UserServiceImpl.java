@@ -8,28 +8,19 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 
 @Service
 @RequiredArgsConstructor
-@Validated
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
     @Override
     @Transactional
-    public User createUser(
-        @Email @NotBlank String email,
-        @NotBlank @Size(min = 2, max = 20) String nickname,
-        @NotBlank @Size(min = 8) String password
-    ) {
+    public User createUser(String email, String nickname, String password) {
         if (userRepository.existsByEmail(email)) {
             throw new InvalidUserException(detailMap("email", email));
         }
@@ -47,10 +38,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User login(
-        @Email @NotBlank String email,
-        @NotBlank String password
-    ) {
+    public User login(String email, String password) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new UserNotFoundException(detailMap("email", email)));
 
@@ -74,7 +62,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateUser(UUID userId, @NotBlank @Size(min = 2, max = 20) String nickname) {
+    public User updateUser(UUID userId, String nickname) {
         User user = getActiveUser(userId);
         user.updateProfile(nickname);
         return userRepository.save(user);
