@@ -1,0 +1,236 @@
+package com.sprint.sb06deokhugamteam01.repository.review;
+
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.sprint.sb06deokhugamteam01.domain.QReview;
+import com.sprint.sb06deokhugamteam01.domain.Review;
+import com.sprint.sb06deokhugamteam01.dto.review.CursorPagePopularReviewRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+@RequiredArgsConstructor
+public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
+
+    private final JPAQueryFactory queryFactory;
+    private final QReview r = QReview.review;
+
+    @Override
+    public Slice<Review> getReviews(
+            UUID userId,
+            UUID bookId,
+            String keyword,
+            boolean ascending,
+            boolean useRating,
+            String cursor,
+            LocalDateTime after,
+            Integer limit,
+            Pageable pageable
+    ){
+        // 다음 페이지 존재여부 확인 (hasNext)
+        int queryLimit = limit + 1;
+
+        List<Review> results = queryFactory
+                .selectFrom(r)
+                .where(
+                        // 커서 조건
+                        cursorCondition(cursor, after, ascending, useRating),
+                        // 필터링 조건
+                        userIdEq(userId),
+                        bookIdEq(bookId),
+                        keywordContains(keyword),
+
+                        r.isActive.isTrue()
+                )
+                .orderBy(
+                        // 4. 주 정렬 조건 (Cursor Field)
+                        getOrderSpecifier(ascending, useRating),
+                        // 5. 보조 정렬 조건 (Tie-breaker, 고유 ID)
+                        getTieBreakerOrder(ascending)
+                )
+                .limit(queryLimit) // limit보다 하나 더 요청
+                .fetch();
+
+        // SliceImpl 반환을 위한 후처리
+        boolean hasNext = results.size() > limit;
+        if (hasNext) {
+            results.remove(limit.intValue()); // 요청한 개수 초과분은 제거
+        }
+
+        // Pageable은 결과가 limit보다 작거나 같으면 hasNext=false로 자동 설정됩니다.
+        return new SliceImpl<>(results, pageable, hasNext);
+    }
+
+    // ------------------- where 절 Predicate 생성 메서드 -------------------
+
+    /**
+     * 커서 기반 페이지네이션을 위한 조건 (주 커서와 보조 커서 동시 처리)
+     */
+    private Predicate cursorCondition(String cursor, LocalDateTime after, boolean ascending, boolean useRating) {
+        if (cursor == null) {
+            return null; // 첫 페이지 조회
+        }
+
+        // 주 커서 필드 (rating 또는 createdAt)
+        if (useRating) {
+            // rating과 createdAt을 동시에 비교
+            if (ascending) { // ASC: rating이 커지거나 (같으면) createdAt이 커지는 경우
+                return r.rating.gt(Integer.parseInt(cursor))
+                        .or(r.rating.eq(Integer.parseInt(cursor)).and(r.createdAt.gt(after)));
+            } else { // DESC: rating이 작아지거나 (같으면) createdAt이 작아지는 경우
+                return r.rating.lt(Integer.parseInt(cursor))
+                        .or(r.rating.eq(Integer.parseInt(cursor)).and(r.createdAt.lt(after)));
+            }
+        } else {
+            // createdAt만 사용 (createdAt이 주 커서인 경우)
+            if (ascending) { // ASC: createdAt이 커지는 경우 (더 나중에 생성된 리뷰)
+                return r.createdAt.gt(after);
+            } else { // DESC: createdAt이 작아지는 경우 (더 먼저 생성된 리뷰)
+                return r.createdAt.lt(after);
+            }
+        }
+    }
+
+    private Predicate userIdEq(UUID userId) {
+        return userId != null ? r.user.id.eq(userId) : null;
+    }
+
+    private Predicate bookIdEq(UUID bookId) {
+        return bookId != null ? r.book.id.eq(bookId) : null;
+    }
+
+    private Predicate keywordContains(String keyword) {
+        if (keyword == null || keyword.isEmpty()) {
+            return null;
+        }
+        // keyword가 내용(content) 또는 사용자 닉네임에 포함되는지 검색
+        return r.content.containsIgnoreCase(keyword)
+                .or(r.user.nickname.containsIgnoreCase(keyword));
+    }
+
+    // ------------------- orderBy 절 OrderSpecifier 생성 메서드 -------------------
+
+    /** 주 커서 필드 정렬 (rating 또는 createdAt) */
+    private OrderSpecifier<?> getOrderSpecifier(boolean ascending, boolean useRating) {
+        Order order = ascending ? Order.ASC : Order.DESC;
+
+        if (useRating) {
+            return new OrderSpecifier<>(order, r.rating);
+        } else {
+            return new OrderSpecifier<>(order, r.createdAt);
+        }
+    }
+
+    /** 보조 정렬 조건 (Tie-breaker): ID를 기준으로 정렬 */
+    private OrderSpecifier<?> getTieBreakerOrder(boolean ascending) {
+        // 커서 페이징은 항상 ID로 정렬 방향을 고정하는 것이 일반적이지만,
+        // 여기서는 주 커서의 방향과 동일하게 설정하여 일관성을 유지합니다.
+        Order order = ascending ? Order.ASC : Order.DESC;
+        return new OrderSpecifier<>(order, r.id);
+    }
+
+    @Override
+    public Slice<Review> getPopularReviews(
+            CursorPagePopularReviewRequest.RankCriteria period,
+            boolean descending,
+            String cursor,
+            LocalDateTime after,
+            Integer limit,
+            Pageable pageable
+    ) {
+        int queryLimit = limit + 1;
+
+        List<Review> results = queryFactory
+                .selectFrom(r)
+                .where(
+                        // 1. 기간 필터링 (DAILY, WEEKLY 등)
+                        periodCondition(period),
+                        // 2. 커서 조건 (likeCount와 createdAt 조합)
+                        popularCursorCondition(cursor, after, descending),
+                        // 3. isActive 조건 (Soft Delete 처리 가정)
+                        r.isActive.isTrue()
+                )
+                // 4. 정렬 조건 (likeCount -> createdAt)
+                .orderBy(getPopularOrderSpecifiers(descending))
+                .limit(queryLimit)
+                .fetch();
+
+        // SliceImpl 반환을 위한 후처리
+        boolean hasNext = results.size() > limit;
+        if (hasNext) {
+            results.remove(limit.intValue()); // 요청한 개수 초과분은 제거
+        }
+
+        return new SliceImpl<>(results, pageable, hasNext);
+    }
+
+    // ------------------- Predicate 생성 메서드 -------------------
+
+    /** 인기 순위 기간에 따른 createdAt 필터링 조건 생성 */
+    private Predicate periodCondition(CursorPagePopularReviewRequest.RankCriteria period) {
+        if (period == null || period == CursorPagePopularReviewRequest.RankCriteria.ALL_TIME) {
+            return null;
+        }
+
+        LocalDateTime startDateTime;
+        switch (period) {
+            case DAILY:
+                startDateTime = LocalDateTime.now().minusDays(1);
+                break;
+            case WEEKLY:
+                startDateTime = LocalDateTime.now().minusWeeks(1);
+                break;
+            case MONTHLY:
+                startDateTime = LocalDateTime.now().minusMonths(1);
+                break;
+            default:
+                return null;
+        }
+        // startDateTime 이후에 생성된 리뷰만 포함
+        return r.createdAt.goe(startDateTime);
+    }
+
+    /** 인기 순위 커서 조건 (likeCount와 createdAt 조합) */
+    private Predicate popularCursorCondition(String cursor, LocalDateTime after, boolean descending) {
+        if (cursor == null) {
+            return null; // 첫 페이지 조회
+        }
+
+        try {
+            Integer cursorLikeCount = Integer.parseInt(cursor);
+
+            if (descending) {
+                // DESC: likeCount < cursor OR (likeCount == cursor AND createdAt < after)
+                return r.likeCount.lt(cursorLikeCount)
+                        .or(r.likeCount.eq(cursorLikeCount).and(r.createdAt.lt(after)));
+            } else {
+                // ASC: likeCount > cursor OR (likeCount == cursor AND createdAt > after)
+                return r.likeCount.gt(cursorLikeCount)
+                        .or(r.likeCount.eq(cursorLikeCount).and(r.createdAt.gt(after)));
+            }
+        } catch (NumberFormatException e) {
+            // 커서가 유효한 정수가 아닐 경우 예외 처리
+            // 실제 환경에서는 Custom Exception으로 처리해야 함
+            throw new IllegalArgumentException("유효하지 않은 커서 형식입니다: " + cursor);
+        }
+    }
+
+    // ------------------- OrderSpecifier 생성 메서드 -------------------
+
+    /** 주 정렬 (likeCount)와 보조 정렬 (createdAt) 정의 */
+    private OrderSpecifier<?>[] getPopularOrderSpecifiers(boolean descending) {
+        Order order = descending ? Order.DESC : Order.ASC;
+
+        return new OrderSpecifier[]{
+                new OrderSpecifier<>(order, r.likeCount), // Primary: likeCount
+                new OrderSpecifier<>(order, r.createdAt)  // Secondary: createdAt (Tie-breaker)
+        };
+    }
+}

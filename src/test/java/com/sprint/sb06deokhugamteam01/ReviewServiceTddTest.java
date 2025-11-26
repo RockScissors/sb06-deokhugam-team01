@@ -5,7 +5,7 @@ import com.sprint.sb06deokhugamteam01.domain.Review;
 import com.sprint.sb06deokhugamteam01.domain.User;
 import com.sprint.sb06deokhugamteam01.dto.review.*;
 import com.sprint.sb06deokhugamteam01.repository.BookRepository;
-import com.sprint.sb06deokhugamteam01.repository.ReviewRepository;
+import com.sprint.sb06deokhugamteam01.repository.review.ReviewRepository;
 import com.sprint.sb06deokhugamteam01.repository.UserRepository;
 import com.sprint.sb06deokhugamteam01.service.review.ReviewServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,8 +14,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -40,14 +46,28 @@ class ReviewServiceTddTest {
     private ReviewServiceImpl reviewService;
 
     private final UUID reviewId = UUID.randomUUID();
+    private final UUID reviewId2 = UUID.randomUUID();
+
     private final UUID userId = UUID.randomUUID();
     private final UUID requestUserId = UUID.randomUUID();
-    private final UUID bookId = UUID.randomUUID();
 
+    private final UUID bookId = UUID.randomUUID();
+    private final UUID bookId2 = UUID.randomUUID();
+
+    @Spy
     Review testReview;
+
+    @Spy
+    Review testReview2;
+
+    @Spy
+    Book testBook;
+
+    @Spy
+    Book testBook2;
+
     User testUser;
     User testRequestUser;
-    Book testBook;
     ReviewOperationRequest testReviewOperationRequest;
 
     @BeforeEach
@@ -76,9 +96,22 @@ class ReviewServiceTddTest {
                 .title("testBook")
                 .author("author")
                 .publisher("publisher")
-                .publishedDate(LocalDateTime.now())
+                .publishedDate(LocalDate.now())
                 .reviewCount(10)
                 .rating(4.5)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .isActive(true)
+                .build();
+
+        testBook2 = Book.builder()
+                .id(bookId2)
+                .title("testBook2")
+                .author("author2")
+                .publisher("publisher2")
+                .publishedDate(LocalDate.now())
+                .reviewCount(10)
+                .rating(4.0)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .isActive(true)
@@ -88,6 +121,19 @@ class ReviewServiceTddTest {
                 .id(reviewId)
                 .user(testUser)
                 .book(testBook)
+                .rating(4)
+                .content("내용")
+                .likeCount(0)
+                .commentCount(2)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .isActive(true)
+                .build();
+
+        testReview2 = Review.builder()
+                .id(reviewId2)
+                .user(testUser)
+                .book(testBook2)
                 .rating(4)
                 .content("내용")
                 .likeCount(0)
@@ -155,9 +201,8 @@ class ReviewServiceTddTest {
                 .rating(5)
                 .build();
 
-        // userRepository가 Optional.empty()를 반환하여 User가 없음을 시뮬레이션
+        // 요청 사용자가 잘못됨을 시뮬레이션
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
-        when(bookRepository.findById(bookId)).thenReturn(Optional.of(testBook));
 
         // when & then
         assertThatThrownBy(() -> reviewService.createReview(request))
@@ -205,43 +250,50 @@ class ReviewServiceTddTest {
 
     @Test
     @DisplayName("getReviews 메서드는 호출 시 CursorPageResponseReviewDto를 반환한다")
-    void getReviews_TDD_성공() {
+    void getReviews_성공() {
 
         // Given
-        UUID requestUserId = UUID.randomUUID();
         CursorPageReviewRequest request = CursorPageReviewRequest.builder()
                 .userId(userId)
                 .bookId(bookId)
                 .keyword(null)
-                .orderBy(CursorPageReviewRequest.SortOrder.createdAt)
+                .orderBy(CursorPageReviewRequest.SortField.createdAt)
                 .direction(CursorPageReviewRequest.SortDirection.DESC)
                 .cursor(null) // 조회 기준은 없음
                 .after(null)
-                .limit(10)
-                .requestUserId(requestUserId)
+                .limit(50)
                 .build();
 
-        CursorPageResponseReviewDto mockResponse = CursorPageResponseReviewDto.builder()
-                .content(Collections.emptyList())
-                .nextCursor(null)
-                .nextAfter(null)
-                .size(0)
-                .totalElements(0)
-                .hasNext(false)
-                .build();
+        Slice<Review> mockSlice = new SliceImpl<>(
+                Collections.emptyList(),
+                PageRequest.of(0, request.limit()), // Pageable 객체 (없어도 무방하나 명시적으로)
+                false // hasNext가 false임을 의미
+        );
 
-        when(reviewService.getReviews(any(CursorPageReviewRequest.class)))
-                .thenReturn(mockResponse);
+        when(reviewRepository.getReviews(
+                any(), any(), any(), anyBoolean(), anyBoolean(), any(), any(), anyInt(), any()
+        )).thenReturn(mockSlice);
 
         // When
-        CursorPageResponseReviewDto response = reviewService.getReviews(request);
+        reviewService.getReviews(request, requestUserId);
 
         // Then
-        assertThat(response).isNotNull();
-        assertThat(response.hasNext()).isFalse();
-        assertThat(response.size()).isZero();
+        verify(reviewRepository, times(1)).getReviews(
+                request.userId(),
+                request.bookId(),
+                request.keyword(),
+                false,
+                false,
+                null,
+                null,
+                50, // limit
+                PageRequest.of(0, 50)
+        );
     }
 
+    /**
+     * Refactor 단계에서 Validation 구현 후 통과시킬 예정
+     */
     @Test
     @DisplayName("getReviews 메서드는 limit이 유효하지 않을 때 IllegalArgumentException을 던진다.")
     void getReviews_실패_Limit_유효성_검증() {
@@ -251,18 +303,17 @@ class ReviewServiceTddTest {
                 .userId(userId)
                 .bookId(bookId)
                 .limit(0) // 유효성 실패
-                .orderBy(CursorPageReviewRequest.SortOrder.createdAt)
+                .orderBy(CursorPageReviewRequest.SortField.createdAt)
                 .direction(CursorPageReviewRequest.SortDirection.DESC)
                 .build();
 
         // When & Then
         // 서비스 메서드가 유효성 검사에 실패하면 IllegalArgumentException을 던진다고 가정
-        assertThatThrownBy(() -> reviewService.getReviews(invalidLimitRequest))
+        assertThatThrownBy(() -> reviewService.getReviews(invalidLimitRequest, requestUserId))
                 .isInstanceOf(IllegalArgumentException.class);
 
         // 리포지토리 메서드 호출이 없었는지 확인
-        // TODO 리포지토리 메서드는 추후 구현
-        // verify(reviewRepository, never()).findByCursor(any(), any(), any(), anyInt(), any());
+        verify(reviewRepository, never()).getReviews(any(),any(),any(),any(),any(),any(),any(),any(),any());
     }
 
     @Test
@@ -272,73 +323,97 @@ class ReviewServiceTddTest {
         // Given
         CursorPagePopularReviewRequest request = CursorPagePopularReviewRequest.builder()
                 .period(CursorPagePopularReviewRequest.RankCriteria.WEEKLY) // 주간 랭킹 조회 요청
-                .direction("DESC")
+                .direction(CursorPagePopularReviewRequest.SortDirection.DESC)
                 .cursor(null)
                 .after(null)
                 .limit(10)
                 .build();
 
-        // Mock Response 생성 (실제 리뷰 객체는 Object로 가정)
-        List<Object> mockContent = List.of(new Object(), new Object()); // 2개의 mock 리뷰
+        List<Review> mockReviewList = List.of(testReview, testReview2);
 
-        // 다음 페이지가 있다고 가정
-        String mockNextCursor = "20";
-        LocalDateTime mockNextAfter = LocalDateTime.now().minusHours(1);
+        Slice<Review> mockSlice = new SliceImpl<>(
+                mockReviewList,
+                PageRequest.of(0, request.limit()),
+                true // 다음 페이지가 존재함
+        );
 
-        CursorPageResponsePopularReviewDto mockResponse = CursorPageResponsePopularReviewDto.builder()
-                .content(mockContent)
-                .nextCursor(mockNextCursor)
-                .nextAfter(mockNextAfter)
-                .size(mockContent.size())
-                .totalElements(100)
-                .hasNext(true) // 다음 페이지가 존재함
-                .build();
-
-        // TODO Repository 메서드 Mocking으로 수정
-        when(reviewService.getPopularReviews(any(CursorPagePopularReviewRequest.class)))
-                .thenReturn(mockResponse);
+        when(reviewRepository.getPopularReviews(
+                eq(request.period()),
+                eq(true), // DESC면 descending = true
+                eq(request.cursor()),
+                eq(request.after()),
+                eq(request.limit()),
+                any(Pageable.class) // Pageable 객체는 any()로 처리
+        )).thenReturn(mockSlice);
 
         // When
-        CursorPageResponsePopularReviewDto response = reviewService.getPopularReviews(request);
+        CursorPageResponsePopularReviewDto response = reviewService.getPopularReviews(request, requestUserId);
 
         // Then
         assertThat(response).isNotNull();
         assertThat(response.hasNext()).isTrue();
         assertThat(response.size()).isEqualTo(2);
-        assertThat(response.nextCursor()).isEqualTo(mockNextCursor);
-        assertThat(response.nextAfter()).isEqualTo(mockNextAfter);
+        assertThat(response.nextCursor()).isEqualTo(String.valueOf(testReview2.getLikeCount()));
+        assertThat(response.nextAfter()).isEqualTo(testReview2.getCreatedAt());
         assertThat(response.content()).hasSize(2);
 
-        verify(reviewService, times(1)).getPopularReviews(request);
+        verify(reviewRepository, times(1)).getPopularReviews(
+                eq(request.period()),
+                eq(true),
+                eq(request.cursor()),
+                eq(request.after()),
+                eq(request.limit()),
+                any(Pageable.class)
+        );
     }
 
+    /**
+     * Refactor 단계에서 Validation 구현 후 통과시킬 예정
+     */
     @Test
     @DisplayName("getPopularReviews 메서드는 period가 null일 때 IllegalArgumentException을 던진다.")
     void getPopularReviews_실패_Period_누락() {
 
         // Given
-        CursorPagePopularReviewRequest invalidRequest = CursorPagePopularReviewRequest.builder()
+        CursorPagePopularReviewRequest request = CursorPagePopularReviewRequest.builder()
                 .period(null) // 필수 필드 누락 (유효성 실패)
-                .direction("DESC")
+                .direction(CursorPagePopularReviewRequest.SortDirection.DESC)
                 .limit(10)
                 .build();
 
+        List<Review> mockReviewList = List.of(testReview, testReview2);
+
+        Slice<Review> mockSlice = new SliceImpl<>(
+                mockReviewList,
+                PageRequest.of(0, request.limit()),
+                true // 다음 페이지가 존재함
+        );
+
+        when(reviewRepository.getPopularReviews(
+                eq(request.period()),
+                eq(true), // DESC면 descending = true
+                eq(request.cursor()),
+                eq(request.after()),
+                eq(request.limit()),
+                any(Pageable.class) // Pageable 객체는 any()로 처리
+        )).thenReturn(mockSlice);
+
         // When & Then
-        assertThatThrownBy(() -> reviewService.getPopularReviews(invalidRequest))
+        assertThatThrownBy(() -> reviewService.getPopularReviews(request, requestUserId))
                 .isInstanceOf(IllegalArgumentException.class);
 
         // 리포지토리 메서드 호출이 없었는지 확인
-        // TODO Repository 매서드 호출 검증으로 수정
-        verify(reviewService, never()).getPopularReviews(any());
+        verify(reviewRepository, never()).getPopularReviews(any(),any(),any(),any(),any(),any());
     }
 
     @Test
-    @DisplayName("deleteReview 메서드는 호출 시 Review 객체의 isActive를 false로 바꾼다.")
+    @DisplayName("updateReview 메서드는 호출 시 Review 객체의 필드값을 바꾸고 ReviewDto를 반환한다.")
     void updateReview_성공(){
 
         // given
         when(userRepository.findById(requestUserId)).thenReturn(Optional.of(testRequestUser));
         when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(testReview));
+        when(reviewRepository.save(testReview)).thenReturn(testReview);
 
         ReviewUpdateRequest updateRequest = ReviewUpdateRequest.builder()
                 .content("수정")
@@ -356,6 +431,9 @@ class ReviewServiceTddTest {
         verify(reviewRepository, times(1)).save(testReview);
     }
 
+    /**
+     * Refactor 단계에서 Validation 구현 후 통과시킬 예정
+     */
     @Test
     @DisplayName("updateReview 메서드는 rating이 허용 범위를 벗어날 때 IllegalArgumentException을 던진다.")
     void updateReview_실패_Rating_범위_초과() {
@@ -364,7 +442,6 @@ class ReviewServiceTddTest {
         when(userRepository.findById(requestUserId)).thenReturn(Optional.of(testRequestUser));
         when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(testReview));
 
-        // 유효하지 않은 rating 값 (예: 최대치인 5를 초과한 6)
         ReviewUpdateRequest invalidRequest = ReviewUpdateRequest.builder()
                 .content("유효한 내용")
                 .rating(6)
@@ -398,8 +475,7 @@ class ReviewServiceTddTest {
     void deleteReview_실패_User_없음() {
 
         // given
-        when(userRepository.findById(requestUserId)).thenReturn(Optional.of(testRequestUser));
-        when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(testReview));
+        when(userRepository.findById(requestUserId)).thenReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> reviewService.deleteReview(testReviewOperationRequest, requestUserId))
@@ -420,7 +496,7 @@ class ReviewServiceTddTest {
         reviewService.hardDeleteReview(testReviewOperationRequest, requestUserId);
 
         // then
-        verify(reviewRepository, times(1)).deleteById(reviewId);
+        verify(reviewRepository, times(1)).delete(testReview);
     }
 
     @Test
@@ -451,7 +527,7 @@ class ReviewServiceTddTest {
         // then
         assertThat(response).isNotNull();
         assertThat(response.reviewId()).isEqualTo(reviewId);
-        assertThat(response.userId()).isEqualTo(userId);
+        assertThat(response.userId()).isEqualTo(requestUserId);
         assertThat(response.liked()).isTrue();
         assertThat(testReview.getLikeCount()).isEqualTo(1);
         verify(reviewRepository, times(1)).save(testReview);
