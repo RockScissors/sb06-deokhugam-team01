@@ -10,6 +10,8 @@ import com.sprint.sb06deokhugamteam01.exception.RootException;
 import com.sprint.sb06deokhugamteam01.exception.book.*;
 import com.sprint.sb06deokhugamteam01.repository.BookQRepository;
 import com.sprint.sb06deokhugamteam01.repository.BookRepository;
+import com.sprint.sb06deokhugamteam01.repository.CommentRepository;
+import com.sprint.sb06deokhugamteam01.repository.ReviewRepository;
 import org.jeasy.random.EasyRandom;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,6 +40,12 @@ class BookServiceImplTest {
 
     @Mock
     private BookQRepository bookQRepository;
+
+    @Mock
+    private CommentRepository commentRepository;
+
+    @Mock
+    private ReviewRepository reviewRepository;
 
     @InjectMocks
     private BookServiceImpl bookService;
@@ -405,8 +413,8 @@ class BookServiceImplTest {
         when(bookRepository.existsById(bookId))
                 .thenReturn(true);
 
-        when(bookRepository.findById(bookId))
-                .thenReturn(Optional.of(book));
+        when(reviewRepository.findByBookId(bookId))
+                .thenReturn(java.util.Collections.emptyList());
 
         //when
 
