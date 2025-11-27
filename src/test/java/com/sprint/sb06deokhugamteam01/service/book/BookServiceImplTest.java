@@ -41,9 +41,6 @@ class BookServiceImplTest {
     private BookRepository bookRepository;
 
     @Mock
-    private BookQRepository bookQRepository;
-
-    @Mock
     private CommentRepository commentRepository;
 
     @Mock
@@ -167,7 +164,7 @@ class BookServiceImplTest {
         when(bookRepository.count())
                 .thenReturn(100L);
 
-        when(bookQRepository.findBooksByKeyword(pagingBookRequest))
+        when(bookRepository.findBooksByKeyword(pagingBookRequest))
                 .thenReturn(new SliceImpl<>(nCopies(11, book)));
 
         //when

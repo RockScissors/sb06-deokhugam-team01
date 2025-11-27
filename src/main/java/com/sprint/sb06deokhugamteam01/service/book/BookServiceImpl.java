@@ -30,7 +30,6 @@ import java.util.UUID;
 public class BookServiceImpl implements  BookService {
 
     private final BookRepository bookRepository;
-    private final BookQRepository bookQRepository;
     private final CommentRepository commentRepository;
     private final ReviewRepository reviewRepository;
 
@@ -49,7 +48,7 @@ public class BookServiceImpl implements  BookService {
     @Override
     public CursorPageResponseBookDto getBooksByPage(PagingBookRequest pagingBookRequest) {
 
-        Slice<Book> bookSlice = bookQRepository.findBooksByKeyword(pagingBookRequest);
+        Slice<Book> bookSlice = bookRepository.findBooksByKeyword(pagingBookRequest);
 
         return CursorPageResponseBookDto.builder()
                 .content(bookSlice.getContent().stream()
