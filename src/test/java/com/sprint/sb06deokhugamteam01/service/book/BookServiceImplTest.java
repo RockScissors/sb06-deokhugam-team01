@@ -6,9 +6,7 @@ import com.sprint.sb06deokhugamteam01.dto.book.request.BookCreateRequest;
 import com.sprint.sb06deokhugamteam01.dto.book.request.BookUpdateRequest;
 import com.sprint.sb06deokhugamteam01.dto.book.request.PagingBookRequest;
 import com.sprint.sb06deokhugamteam01.dto.book.response.CursorPageResponseBookDto;
-import com.sprint.sb06deokhugamteam01.exception.RootException;
 import com.sprint.sb06deokhugamteam01.exception.book.*;
-import com.sprint.sb06deokhugamteam01.repository.BookQRepository;
 import com.sprint.sb06deokhugamteam01.repository.BookRepository;
 import com.sprint.sb06deokhugamteam01.repository.CommentRepository;
 import com.sprint.sb06deokhugamteam01.repository.ReviewRepository;
@@ -412,7 +410,7 @@ class BookServiceImplTest {
         when(bookRepository.existsById(bookId))
                 .thenReturn(true);
 
-        when(reviewRepository.findByBookId(bookId))
+        when(reviewRepository.findByBook_Id(bookId))
                 .thenReturn(emptyList());
 
         //when

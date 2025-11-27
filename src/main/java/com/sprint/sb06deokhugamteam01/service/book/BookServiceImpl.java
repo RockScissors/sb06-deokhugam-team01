@@ -9,7 +9,6 @@ import com.sprint.sb06deokhugamteam01.dto.book.request.PagingBookRequest;
 import com.sprint.sb06deokhugamteam01.dto.book.response.CursorPageResponseBookDto;
 import com.sprint.sb06deokhugamteam01.exception.book.AlReadyExistsIsbnException;
 import com.sprint.sb06deokhugamteam01.exception.book.NoSuchBookException;
-import com.sprint.sb06deokhugamteam01.repository.BookQRepository;
 import com.sprint.sb06deokhugamteam01.repository.BookRepository;
 import com.sprint.sb06deokhugamteam01.repository.CommentRepository;
 import com.sprint.sb06deokhugamteam01.repository.ReviewRepository;
@@ -129,9 +128,9 @@ public class BookServiceImpl implements  BookService {
         bookRepository.deleteById(id);
 
         //연관관계 매핑된 리뷰들 모두 삭제하기
-        List<Review> reviewList = reviewRepository.findByBookId(id);
-        commentRepository.deleteByReviewList(reviewList);
-        reviewRepository.deleteByBookId(id);
+        List<Review> reviewList = reviewRepository.findByBook_Id(id);
+        commentRepository.deleteByReviewIn(reviewList);
+        reviewRepository.deleteByBook_Id(id);
 
     }
 
