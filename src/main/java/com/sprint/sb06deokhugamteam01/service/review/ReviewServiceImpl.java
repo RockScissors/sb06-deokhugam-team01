@@ -67,6 +67,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CursorPageResponseReviewDto getReviews(CursorPageReviewRequest request, UUID requestUserId) {
 
         // 기본값 처리
@@ -128,6 +129,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CursorPageResponsePopularReviewDto getPopularReviews(CursorPagePopularReviewRequest request,
                                                                 UUID requestUserId
     ) {
@@ -186,6 +188,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    @Transactional
     public ReviewDto updateReview(ReviewOperationRequest request,
                                   ReviewUpdateRequest updateRequest,
                                   UUID requestUserId
@@ -212,6 +215,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    @Transactional
     public void deleteReview(ReviewOperationRequest request, UUID requestUserId) {
         userRepository.findById(requestUserId) // TODO 커스텀 예외로 대체
                 .orElseThrow(() -> new IllegalArgumentException("해당 정보를 가진 사용자가 존재하지 않습니다."));
@@ -224,6 +228,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    @Transactional
     public void hardDeleteReview(ReviewOperationRequest request, UUID requestUserId) {
         userRepository.findById(requestUserId) // TODO 커스텀 예외로 대체
                 .orElseThrow(() -> new IllegalArgumentException("해당 정보를 가진 사용자가 존재하지 않습니다."));
@@ -235,6 +240,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    @Transactional
     public ReviewLikeDto likeReview(ReviewOperationRequest request, UUID requestUserId) {
 
         userRepository.findById(requestUserId) // TODO 커스텀 예외로 대체
