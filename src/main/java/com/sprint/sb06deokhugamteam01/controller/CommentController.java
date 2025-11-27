@@ -3,7 +3,7 @@ package com.sprint.sb06deokhugamteam01.controller;
 import com.sprint.sb06deokhugamteam01.dto.CommentCreateRequest;
 import com.sprint.sb06deokhugamteam01.dto.CommentDto;
 import com.sprint.sb06deokhugamteam01.dto.CommentUpdateRequest;
-import com.sprint.sb06deokhugamteam01.service.comment.CommentService;
+import com.sprint.sb06deokhugamteam01.service.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,11 +31,11 @@ public class CommentController {
     }
 
     @PatchMapping(path = "/{commentId}")
-    public ResponseEntity<CommentDto> updateComment(@Valid @RequestBody CommentUpdateRequest commentUpdateRequest,
-                                                    @PathVariable("commentId") UUID commentId,
-                                                    @RequestHeader("Deokhugam-Request-User_ID") UUID userId) {
+    public ResponseEntity<CommentDto> updateComment(@PathVariable("commentId") UUID commentId,
+                                                    @RequestHeader("Deokhugam-Request-User_ID") UUID userId,
+                                                    @Valid @RequestBody CommentUpdateRequest commentUpdateRequest) {
         log.info("댓글 수정 요청: {}", commentUpdateRequest);
-        CommentDto updatedComment = commentService.updateComment(commentUpdateRequest);
+        CommentDto updatedComment = commentService.updateComment(commentId, userId, commentUpdateRequest);
         log.debug("댓글 수정 응답: {}", updatedComment);
         return ResponseEntity
                 .status(HttpStatus.OK)

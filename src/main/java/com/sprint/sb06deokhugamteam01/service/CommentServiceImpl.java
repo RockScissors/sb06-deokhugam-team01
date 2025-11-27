@@ -1,4 +1,4 @@
-package com.sprint.sb06deokhugamteam01.service.comment;
+package com.sprint.sb06deokhugamteam01.service;
 
 import com.sprint.sb06deokhugamteam01.dto.CommentCreateRequest;
 import com.sprint.sb06deokhugamteam01.dto.CommentDto;
@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -23,7 +25,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Transactional
     @Override
-    public CommentDto updateComment(CommentUpdateRequest commentUpdateRequest) {
+    public CommentDto updateComment(UUID commentId, UUID userId, CommentUpdateRequest commentUpdateRequest) {
         return
     }
 }
