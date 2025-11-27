@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface ReviewRepository extends JpaRepository<ReviewLog, String> {
+public interface ReviewRepository extends JpaRepository<ReviewLog, UUID> {
 
     @Query("SELECT r FROM Review r WHERE r.book.id = :bookId")
     List<Review> findByBookId(UUID bookId);
