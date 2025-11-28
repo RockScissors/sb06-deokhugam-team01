@@ -1,4 +1,4 @@
-package com.sprint.sb06deokhugamteam01.service;
+package com.sprint.sb06deokhugamteam01.service.comment;
 
 import com.sprint.sb06deokhugamteam01.dto.CommentCreateRequest;
 import com.sprint.sb06deokhugamteam01.dto.CommentDto;

@@ -1,19 +1,18 @@
 package com.sprint.sb06deokhugamteam01.service.comment;
 
 import com.sprint.sb06deokhugamteam01.domain.Comment;
-import com.sprint.sb06deokhugamteam01.domain.Review;
+import com.sprint.sb06deokhugamteam01.domain.review.Review;
 import com.sprint.sb06deokhugamteam01.domain.User;
 import com.sprint.sb06deokhugamteam01.dto.CommentCreateRequest;
 import com.sprint.sb06deokhugamteam01.dto.CommentDto;
 import com.sprint.sb06deokhugamteam01.dto.CommentUpdateRequest;
-import com.sprint.sb06deokhugamteam01.exception.ReviewNotFoundException; //임의로 만듦
 import com.sprint.sb06deokhugamteam01.exception.comment.CommentAccessDeniedException;
 import com.sprint.sb06deokhugamteam01.exception.comment.CommentNotFoundException;
+import com.sprint.sb06deokhugamteam01.exception.review.ReviewNotFoundException;
 import com.sprint.sb06deokhugamteam01.exception.user.UserNotFoundException;
 import com.sprint.sb06deokhugamteam01.repository.CommentRepository;
-import com.sprint.sb06deokhugamteam01.repository.ReviewRepository;
 import com.sprint.sb06deokhugamteam01.repository.UserRepository;
-import com.sprint.sb06deokhugamteam01.service.CommentServiceImpl;
+import com.sprint.sb06deokhugamteam01.repository.review.ReviewRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

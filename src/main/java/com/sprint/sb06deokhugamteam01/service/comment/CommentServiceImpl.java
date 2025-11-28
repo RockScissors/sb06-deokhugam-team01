@@ -1,18 +1,18 @@
-package com.sprint.sb06deokhugamteam01.service;
+package com.sprint.sb06deokhugamteam01.service.comment;
 
 import com.sprint.sb06deokhugamteam01.domain.Comment;
-import com.sprint.sb06deokhugamteam01.domain.Review;
+import com.sprint.sb06deokhugamteam01.domain.review.Review;
 import com.sprint.sb06deokhugamteam01.domain.User;
 import com.sprint.sb06deokhugamteam01.dto.CommentCreateRequest;
 import com.sprint.sb06deokhugamteam01.dto.CommentDto;
 import com.sprint.sb06deokhugamteam01.dto.CommentUpdateRequest;
-import com.sprint.sb06deokhugamteam01.exception.ReviewNotFoundException;
 import com.sprint.sb06deokhugamteam01.exception.comment.CommentAccessDeniedException;
 import com.sprint.sb06deokhugamteam01.exception.comment.CommentNotFoundException;
+import com.sprint.sb06deokhugamteam01.exception.review.ReviewNotFoundException;
 import com.sprint.sb06deokhugamteam01.exception.user.UserNotFoundException;
 import com.sprint.sb06deokhugamteam01.repository.CommentRepository;
-import com.sprint.sb06deokhugamteam01.repository.ReviewRepository;
 import com.sprint.sb06deokhugamteam01.repository.UserRepository;
+import com.sprint.sb06deokhugamteam01.repository.review.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,7 +34,7 @@ public class CommentServiceImpl implements CommentService {
     public CommentDto createComment(CommentCreateRequest request) {
         log.debug("댓글 생성 시작: request={}", request);
         User user = userRepository.findById(request.userId()).orElseThrow(() -> new UserNotFoundException(new HashMap<>()));
-        Review review = reviewRepository.findById(request.reviewId()).orElseThrow(() -> new ReviewNotFoundException());
+        Review review = reviewRepository.findById(request.reviewId()).orElseThrow(() -> new ReviewNotFoundException(new HashMap<>()));
 
         Comment comment = Comment.builder().user(user).review(review).content(request.content()).build();
         commentRepository.save(comment);

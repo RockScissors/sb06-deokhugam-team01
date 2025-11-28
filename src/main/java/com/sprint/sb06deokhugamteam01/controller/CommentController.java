@@ -3,7 +3,7 @@ package com.sprint.sb06deokhugamteam01.controller;
 import com.sprint.sb06deokhugamteam01.dto.CommentCreateRequest;
 import com.sprint.sb06deokhugamteam01.dto.CommentDto;
 import com.sprint.sb06deokhugamteam01.dto.CommentUpdateRequest;
-import com.sprint.sb06deokhugamteam01.service.CommentService;
+import com.sprint.sb06deokhugamteam01.service.comment.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
