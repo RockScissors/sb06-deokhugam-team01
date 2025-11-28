@@ -5,7 +5,6 @@ import com.sprint.sb06deokhugamteam01.dto.CommentDto;
 import com.sprint.sb06deokhugamteam01.dto.CommentUpdateRequest;
 import com.sprint.sb06deokhugamteam01.service.CommentService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -33,7 +32,7 @@ public class CommentController {
 
     @PatchMapping(path = "/{commentId}")
     public ResponseEntity<CommentDto> updateComment(@PathVariable("commentId") UUID commentId,
-                                                    @RequestHeader("Deokhugam-Request-User_ID") UUID userId,
+                                                    @RequestHeader("Deokhugam-Request-User-ID") UUID userId,
                                                     @Valid @RequestBody CommentUpdateRequest request) {
         log.info("댓글 수정 요청: {}", request);
         CommentDto updatedComment = commentService.updateComment(commentId, userId, request);
