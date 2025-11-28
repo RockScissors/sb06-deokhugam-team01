@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -48,7 +47,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     @Override
     public CommentDto updateComment(UUID commentId, UUID userId, CommentUpdateRequest request) {
-        log.debug("댓글 수정 시작: id={}, request={}", commentId,  request);
+        log.debug("댓글 수정 시작: commentId={}, request={}", commentId,  request);
 
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentNotFoundException(Map.of("commentId", commentId)));
@@ -57,7 +56,7 @@ public class CommentServiceImpl implements CommentService {
             throw new CommentAccessDeniedException(Map.of("userId", userId));
         }
         comment.update(request.content());
-        log.info("댓글 수정 완료: id={}", commentId);
+        log.info("댓글 수정 완료: commentId={}", commentId);
         return CommentDto.from(comment);
     }
 }

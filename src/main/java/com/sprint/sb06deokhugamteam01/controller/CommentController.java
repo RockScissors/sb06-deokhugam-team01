@@ -22,9 +22,10 @@ public class CommentController {
 
     @PostMapping
     public ResponseEntity<CommentDto> createComment(@Valid @RequestBody CommentCreateRequest request) {
-        log.info("댓글 생성 요청: {}", request);
+        log.info("댓글 생성 요청: userId={}, reviewId={}", request.userId(), request.reviewId());
+        log.debug("댓글 생성 요청 상세 데이터: {}", request);
         CommentDto createdComment = commentService.createComment(request);
-        log.debug("댓글 생성 응답: {}", createdComment);
+        log.debug("댓글 생성 응답: commentId={}", createdComment.id());
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(createdComment);
@@ -34,9 +35,10 @@ public class CommentController {
     public ResponseEntity<CommentDto> updateComment(@PathVariable("commentId") UUID commentId,
                                                     @RequestHeader("Deokhugam-Request-User-ID") UUID userId,
                                                     @Valid @RequestBody CommentUpdateRequest request) {
-        log.info("댓글 수정 요청: {}", request);
+        log.info("댓글 수정 요청: userId={}, commentId={}", userId, commentId);
+        log.debug("댓글 수정 요청 상세 데이터: request={}", request);
         CommentDto updatedComment = commentService.updateComment(commentId, userId, request);
-        log.debug("댓글 수정 응답: {}", updatedComment);
+        log.debug("댓글 수정 응답: commentId={}", updatedComment.id());
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(updatedComment);
