@@ -18,7 +18,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
-@Getter @Setter
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -54,4 +54,24 @@ public class Review {
     @ManyToOne
     @JoinColumn(name = "book_id")
     private Book book;
+
+    public void setContent(String content) {
+        this.content = content;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void setRating(int rating) {
+        this.rating = rating;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void setActive(boolean active) {
+        this.isActive = active;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void setLikeCount(int likeCount) {
+        this.likeCount = likeCount;
+        this.updatedAt = LocalDateTime.now();
+    }
 }

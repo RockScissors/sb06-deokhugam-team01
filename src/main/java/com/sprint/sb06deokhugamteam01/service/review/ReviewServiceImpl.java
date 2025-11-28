@@ -203,11 +203,9 @@ public class ReviewServiceImpl implements ReviewService {
 
         if (updateRequest.content() != null) {
             review.setContent(updateRequest.content());
-            review.setUpdatedAt(LocalDateTime.now());
         }
         if (updateRequest.rating() != null) {
             review.setRating(updateRequest.rating());
-            review.setUpdatedAt(LocalDateTime.now());
         }
 
         Review savedReview = reviewRepository.save(review);
