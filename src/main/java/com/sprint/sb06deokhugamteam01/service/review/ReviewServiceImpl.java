@@ -1,8 +1,10 @@
 package com.sprint.sb06deokhugamteam01.service.review;
 
 import com.sprint.sb06deokhugamteam01.domain.Book;
-import com.sprint.sb06deokhugamteam01.domain.Review;
+import com.sprint.sb06deokhugamteam01.domain.review.PopularReviewSearchCondition;
+import com.sprint.sb06deokhugamteam01.domain.review.Review;
 import com.sprint.sb06deokhugamteam01.domain.User;
+import com.sprint.sb06deokhugamteam01.domain.review.ReviewSearchCondition;
 import com.sprint.sb06deokhugamteam01.dto.review.*;
 import com.sprint.sb06deokhugamteam01.repository.BookRepository;
 import com.sprint.sb06deokhugamteam01.repository.review.ReviewRepository;
@@ -11,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -90,17 +91,19 @@ public class ReviewServiceImpl implements ReviewService {
         Pageable pageable = PageRequest.of(0, limit);
 
         // 필터링 조건과 JPA메서드 연결
-        Slice<Review> slice = reviewRepository.getReviews(
-                request.userId(),
-                request.bookId(),
-                request.keyword(),
-                ascending,
-                useRating,
-                request.cursor(),
-                request.after(),
-                limit,
-                pageable
-        );
+        ReviewSearchCondition condition = ReviewSearchCondition.builder()
+                .userId(request.userId())
+                .bookId(request.bookId())
+                .keyword(request.keyword())
+                .useRating(useRating)
+                .ascending(ascending)
+                .cursor(request.cursor())
+                .after(request.after())
+                .limit(request.limit())
+                .build();
+
+        Slice<Review> slice
+                = reviewRepository.getReviews(condition, pageable);
 
         // DTO로 변환
         List<ReviewDto> content = slice.getContent().stream()
@@ -152,14 +155,15 @@ public class ReviewServiceImpl implements ReviewService {
         Pageable pageable = PageRequest.of(0, limit);
 
         // 필터링 조건과 JPA메서드 연결
-        Slice<Review> slice = reviewRepository.getPopularReviews(
-                period,
-                descending,
-                request.cursor(),
-                request.after(),
-                limit,
-                pageable
-        );
+        PopularReviewSearchCondition condition = PopularReviewSearchCondition.builder()
+                .period(period)
+                .descending(descending)
+                .cursor(request.cursor())
+                .after(request.after())
+                .limit(request.limit())
+                .build();
+
+        Slice<Review> slice = reviewRepository.getPopularReviews(condition, pageable);
 
         // DTO로 변환
         List<ReviewDto> content = slice.getContent().stream()
@@ -202,10 +206,10 @@ public class ReviewServiceImpl implements ReviewService {
         // TODO 작성자 == 요청자 인지 검증 필요
 
         if (updateRequest.content() != null) {
-            review.setContent(updateRequest.content());
+            review.updateContent(updateRequest.content());
         }
         if (updateRequest.rating() != null) {
-            review.setRating(updateRequest.rating());
+            review.updateRating(updateRequest.rating());
         }
 
         Review savedReview = reviewRepository.save(review);
@@ -221,7 +225,7 @@ public class ReviewServiceImpl implements ReviewService {
         Review review = reviewRepository.findById(request.reviewId()) // TODO 커스텀 예외로 대체
                 .orElseThrow(() -> new IllegalArgumentException("해당 정보를 가진 리뷰가 존재하지 않습니다."));
 
-        review.setActive(false);
+        review.softDelete();
         reviewRepository.save(review);
     }
 
@@ -248,7 +252,7 @@ public class ReviewServiceImpl implements ReviewService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 정보를 가진 리뷰가 존재하지 않습니다."));
 
         // TODO 유저-좋아요 정보 저장 필요
-        review.setLikeCount(review.getLikeCount() + 1);
+        review.increaseLikeCount();
         reviewRepository.save(review);
 
         return ReviewLikeDto.builder()

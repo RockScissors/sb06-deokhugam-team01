@@ -5,7 +5,9 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sprint.sb06deokhugamteam01.domain.QReview;
-import com.sprint.sb06deokhugamteam01.domain.Review;
+import com.sprint.sb06deokhugamteam01.domain.review.PopularReviewSearchCondition;
+import com.sprint.sb06deokhugamteam01.domain.review.Review;
+import com.sprint.sb06deokhugamteam01.domain.review.ReviewSearchCondition;
 import com.sprint.sb06deokhugamteam01.dto.review.CursorPagePopularReviewRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -23,35 +25,30 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
     private final QReview r = QReview.review;
 
     @Override
-    public Slice<Review> getReviews(
-            UUID userId,
-            UUID bookId,
-            String keyword,
-            boolean ascending,
-            boolean useRating,
-            String cursor,
-            LocalDateTime after,
-            Integer limit,
-            Pageable pageable
-    ){
+    public Slice<Review> getReviews(ReviewSearchCondition condition, Pageable pageable) {
 
+        Integer limit = condition.limit();
         List<Review> results = queryFactory
                 .selectFrom(r)
                 .where(
                         // 커서 조건
-                        cursorCondition(cursor, after, ascending, useRating),
+                        cursorCondition(
+                                condition.cursor(),
+                                condition.after(),
+                                condition.ascending(),
+                                condition.useRating()),
                         // 필터링 조건
-                        userIdEq(userId),
-                        bookIdEq(bookId),
-                        keywordContains(keyword),
+                        userIdEq(condition.userId()),
+                        bookIdEq(condition.bookId()),
+                        keywordContains(condition.keyword()),
                         // soft delete 고려
                         r.isActive.isTrue()
                 )
                 .orderBy(
                         // 주 정렬 조건
-                        getOrderSpecifier(ascending, useRating),
+                        getOrderSpecifier(condition.ascending(), condition.useRating()),
                         // 보조 정렬 조건
-                        getTieBreakerOrder(ascending)
+                        getTieBreakerOrder(condition.ascending())
                 )
                 .limit(limit + 1) // limit보다 하나 더 요청해 hasNext 확인
                 .fetch();
@@ -144,23 +141,22 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 
 
     @Override
-    public Slice<Review> getPopularReviews(
-            CursorPagePopularReviewRequest.RankCriteria period,
-            boolean descending,
-            String cursor,
-            LocalDateTime after,
-            Integer limit,
-            Pageable pageable
-    ) {
-        int queryLimit = limit + 1;
+    public Slice<Review> getPopularReviews(PopularReviewSearchCondition condition, Pageable pageable) {
+
+        Integer limit = condition.limit();
+        boolean descending = condition.descending();
 
         List<Review> results = queryFactory
                 .selectFrom(r)
                 .where(
                         // 1. 기간 필터링 (DAILY, WEEKLY 등)
-                        periodCondition(period),
+                        periodCondition(condition.period()),
                         // 2. 커서 조건 (likeCount와 createdAt 조합)
-                        popularCursorCondition(cursor, after, descending),
+                        popularCursorCondition(
+                                condition.cursor(),
+                                condition.after(),
+                                descending
+                                ),
                         // 3. isActive 조건 (Soft Delete 처리 가정)
                         r.isActive.isTrue()
                 )
@@ -169,11 +165,11 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
                         getPrimaryOrderSpecifier(descending),
                         getSecondaryOrderSpecifier(descending)
                         )
-                .limit(queryLimit)
+                .limit(limit + 1)
                 .fetch();
 
         // SliceImpl 반환을 위한 후처리
-        boolean hasNext = results.size() > limit;
+        boolean hasNext = results.size() > condition.limit();
         if (hasNext) {
             results.remove(limit.intValue()); // 요청한 개수 초과분은 제거
         }

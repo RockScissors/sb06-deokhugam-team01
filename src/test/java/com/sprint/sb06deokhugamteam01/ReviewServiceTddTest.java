@@ -1,8 +1,10 @@
 package com.sprint.sb06deokhugamteam01;
 
 import com.sprint.sb06deokhugamteam01.domain.Book;
-import com.sprint.sb06deokhugamteam01.domain.Review;
+import com.sprint.sb06deokhugamteam01.domain.review.PopularReviewSearchCondition;
+import com.sprint.sb06deokhugamteam01.domain.review.Review;
 import com.sprint.sb06deokhugamteam01.domain.User;
+import com.sprint.sb06deokhugamteam01.domain.review.ReviewSearchCondition;
 import com.sprint.sb06deokhugamteam01.dto.review.*;
 import com.sprint.sb06deokhugamteam01.repository.BookRepository;
 import com.sprint.sb06deokhugamteam01.repository.review.ReviewRepository;
@@ -270,23 +272,14 @@ class ReviewServiceTddTest {
                 false // hasNext가 false임을 의미
         );
 
-        when(reviewRepository.getReviews(
-                any(), any(), any(), anyBoolean(), anyBoolean(), any(), any(), anyInt(), any()
-        )).thenReturn(mockSlice);
+        when(reviewRepository.getReviews(any(), any())).thenReturn(mockSlice);
 
         // When
         reviewService.getReviews(request, requestUserId);
 
         // Then
         verify(reviewRepository, times(1)).getReviews(
-                request.userId(),
-                request.bookId(),
-                request.keyword(),
-                false,
-                false,
-                null,
-                null,
-                50, // limit
+                any(ReviewSearchCondition.class),
                 PageRequest.of(0, 50)
         );
     }
@@ -313,7 +306,7 @@ class ReviewServiceTddTest {
                 .isInstanceOf(IllegalArgumentException.class);
 
         // 리포지토리 메서드 호출이 없었는지 확인
-        verify(reviewRepository, never()).getReviews(any(),any(),any(),any(),any(),any(),any(),any(),any());
+        verify(reviewRepository, never()).getReviews(any(),any());
     }
 
     @Test
@@ -338,11 +331,7 @@ class ReviewServiceTddTest {
         );
 
         when(reviewRepository.getPopularReviews(
-                eq(request.period()),
-                eq(true), // DESC면 descending = true
-                eq(request.cursor()),
-                eq(request.after()),
-                eq(request.limit()),
+                any(PopularReviewSearchCondition.class),
                 any(Pageable.class) // Pageable 객체는 any()로 처리
         )).thenReturn(mockSlice);
 
@@ -358,11 +347,7 @@ class ReviewServiceTddTest {
         assertThat(response.content()).hasSize(2);
 
         verify(reviewRepository, times(1)).getPopularReviews(
-                eq(request.period()),
-                eq(true),
-                eq(request.cursor()),
-                eq(request.after()),
-                eq(request.limit()),
+                any(PopularReviewSearchCondition.class),
                 any(Pageable.class)
         );
     }
@@ -381,29 +366,12 @@ class ReviewServiceTddTest {
                 .limit(10)
                 .build();
 
-        List<Review> mockReviewList = List.of(testReview, testReview2);
-
-        Slice<Review> mockSlice = new SliceImpl<>(
-                mockReviewList,
-                PageRequest.of(0, request.limit()),
-                true // 다음 페이지가 존재함
-        );
-
-        when(reviewRepository.getPopularReviews(
-                eq(request.period()),
-                eq(true), // DESC면 descending = true
-                eq(request.cursor()),
-                eq(request.after()),
-                eq(request.limit()),
-                any(Pageable.class) // Pageable 객체는 any()로 처리
-        )).thenReturn(mockSlice);
-
         // When & Then
         assertThatThrownBy(() -> reviewService.getPopularReviews(request, requestUserId))
                 .isInstanceOf(IllegalArgumentException.class);
 
         // 리포지토리 메서드 호출이 없었는지 확인
-        verify(reviewRepository, never()).getPopularReviews(any(),any(),any(),any(),any(),any());
+        verify(reviewRepository, never()).getPopularReviews(any(),any());
     }
 
     @Test

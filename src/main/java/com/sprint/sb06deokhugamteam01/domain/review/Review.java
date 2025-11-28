@@ -1,5 +1,7 @@
-package com.sprint.sb06deokhugamteam01.domain;
+package com.sprint.sb06deokhugamteam01.domain.review;
 
+import com.sprint.sb06deokhugamteam01.domain.Book;
+import com.sprint.sb06deokhugamteam01.domain.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -55,23 +57,27 @@ public class Review {
     @JoinColumn(name = "book_id")
     private Book book;
 
-    public void setContent(String content) {
+    public void updateContent(String content) {
         this.content = content;
-        this.updatedAt = LocalDateTime.now();
     }
 
-    public void setRating(int rating) {
+    public void updateRating(int rating) {
         this.rating = rating;
-        this.updatedAt = LocalDateTime.now();
     }
 
-    public void setActive(boolean active) {
-        this.isActive = active;
-        this.updatedAt = LocalDateTime.now();
+    public void softDelete() {
+        this.isActive = false;
     }
 
-    public void setLikeCount(int likeCount) {
-        this.likeCount = likeCount;
-        this.updatedAt = LocalDateTime.now();
+    public void restore(){
+        this.isActive = true;
+    }
+
+    public void increaseLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decreaseLikeCount() {
+        if (this.likeCount > 0) this.likeCount--;
     }
 }

@@ -1,7 +1,7 @@
 package com.sprint.sb06deokhugamteam01.dto.review;
 
 import com.sprint.sb06deokhugamteam01.domain.Book;
-import com.sprint.sb06deokhugamteam01.domain.Review;
+import com.sprint.sb06deokhugamteam01.domain.review.Review;
 import com.sprint.sb06deokhugamteam01.domain.User;
 import lombok.Builder;
 
