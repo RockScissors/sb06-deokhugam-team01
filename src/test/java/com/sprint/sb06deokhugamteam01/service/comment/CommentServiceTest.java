@@ -3,9 +3,9 @@ package com.sprint.sb06deokhugamteam01.service.comment;
 import com.sprint.sb06deokhugamteam01.domain.Comment;
 import com.sprint.sb06deokhugamteam01.domain.review.Review;
 import com.sprint.sb06deokhugamteam01.domain.User;
-import com.sprint.sb06deokhugamteam01.dto.comment.CommentCreateRequest;
+import com.sprint.sb06deokhugamteam01.dto.comment.request.CommentCreateRequest;
 import com.sprint.sb06deokhugamteam01.dto.comment.CommentDto;
-import com.sprint.sb06deokhugamteam01.dto.comment.CommentUpdateRequest;
+import com.sprint.sb06deokhugamteam01.dto.comment.request.CommentUpdateRequest;
 import com.sprint.sb06deokhugamteam01.exception.comment.CommentAccessDeniedException;
 import com.sprint.sb06deokhugamteam01.exception.comment.CommentNotFoundException;
 import com.sprint.sb06deokhugamteam01.exception.review.ReviewNotFoundException;
@@ -113,7 +113,6 @@ public class CommentServiceTest {
         verify(commentRepository, never()).save(any(Comment.class));
     }
 
-
     @Test
     @DisplayName("댓글 수정 성공")
     void updateComment_Success(){
@@ -178,7 +177,6 @@ public class CommentServiceTest {
                 .isInstanceOf(CommentAccessDeniedException.class);
     }
 
-
     @Test
     @DisplayName("댓글 논리 삭제 성공")
     void deleteComment_Success(){
@@ -231,6 +229,7 @@ public class CommentServiceTest {
         assertThatThrownBy(() -> commentService.deleteComment(commentId, anotherUserId))
                 .isInstanceOf(CommentAccessDeniedException.class);
     }
+
     @Test
     @DisplayName("댓글 물리 삭제 성공")
     void hardDeleteComment_Success(){
@@ -284,5 +283,46 @@ public class CommentServiceTest {
         assertThatThrownBy(() -> commentService.hardDeleteComment(commentId, anotherUserId))
                 .isInstanceOf(CommentAccessDeniedException.class);
         verify(commentRepository, never()).delete(any(Comment.class));
+    }
+
+    @Test
+    @DisplayName("댓글 상세 정보 조회 성공")
+    void getComment_Success(){
+        // given
+        UUID commentId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID reviewId = UUID.randomUUID();
+
+        User user = User.builder().nickname("유저").build();
+        ReflectionTestUtils.setField(user, "id", userId);
+        Review review = Review.builder().build();
+        ReflectionTestUtils.setField(review, "id", reviewId);
+        Comment comment = Comment.builder().user(user).review(review).build();
+        ReflectionTestUtils.setField(comment, "id", commentId);
+
+        given(commentRepository.findById(commentId)).willReturn(Optional.of(comment));
+
+        // when
+        CommentDto result = commentService.getComment(commentId);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo(commentId);
+        assertThat(result.userNickname()).isEqualTo("유저");
+        assertThat(result.reviewId()).isEqualTo(reviewId);
+        verify(commentRepository).findById(commentId);
+    }
+    @Test
+    @DisplayName("존재하지 않는 댓글로 상세 정보 조회 실패")
+    void getComment_CommentNotFound_Fail(){
+        // given
+        UUID invalidCommentId = UUID.randomUUID();
+
+        given(commentRepository.findById(invalidCommentId)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> commentService.getComment(invalidCommentId))
+                .isInstanceOf(CommentNotFoundException.class);
+        verify(commentRepository).findById(any(UUID.class));
     }
 }

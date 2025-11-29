@@ -3,9 +3,10 @@ package com.sprint.sb06deokhugamteam01.service.comment;
 import com.sprint.sb06deokhugamteam01.domain.Comment;
 import com.sprint.sb06deokhugamteam01.domain.review.Review;
 import com.sprint.sb06deokhugamteam01.domain.User;
-import com.sprint.sb06deokhugamteam01.dto.comment.CommentCreateRequest;
+import com.sprint.sb06deokhugamteam01.dto.comment.request.CommentCreateRequest;
 import com.sprint.sb06deokhugamteam01.dto.comment.CommentDto;
-import com.sprint.sb06deokhugamteam01.dto.comment.CommentUpdateRequest;
+import com.sprint.sb06deokhugamteam01.dto.comment.request.CommentUpdateRequest;
+import com.sprint.sb06deokhugamteam01.dto.comment.response.CursorPageResponseCommentDto;
 import com.sprint.sb06deokhugamteam01.exception.comment.CommentAccessDeniedException;
 import com.sprint.sb06deokhugamteam01.exception.comment.CommentNotFoundException;
 import com.sprint.sb06deokhugamteam01.exception.review.ReviewNotFoundException;
@@ -29,6 +30,7 @@ public class CommentServiceImpl implements CommentService {
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
 
+    // 댓글 등록
     @Transactional
     @Override
     public CommentDto createComment(CommentCreateRequest request) {
@@ -44,6 +46,7 @@ public class CommentServiceImpl implements CommentService {
         return CommentDto.from(comment);
     }
 
+    // 댓글 수정
     @Transactional
     @Override
     public CommentDto updateComment(UUID commentId, UUID userId, CommentUpdateRequest request) {
@@ -60,6 +63,7 @@ public class CommentServiceImpl implements CommentService {
         return CommentDto.from(comment);
     }
 
+    // 댓글 논리 삭제
     @Transactional
     @Override
     public void deleteComment(UUID commentId, UUID userId) {
@@ -72,6 +76,7 @@ public class CommentServiceImpl implements CommentService {
         log.info("댓글 논리 삭제 완료: commentId={}", commentId);
     }
 
+    // 댓글 물리 삭제
     @Transactional
     @Override
     public void hardDeleteComment(UUID commentId, UUID userId) {
@@ -82,5 +87,22 @@ public class CommentServiceImpl implements CommentService {
         }
         commentRepository.delete(comment);
         log.info("댓글 물리 삭제 완료: commentId={}", commentId);
+    }
+
+    // 댓글 상세 정보 조회
+    @Transactional(readOnly = true)
+    @Override
+    public CommentDto getComment(UUID commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CommentNotFoundException(Map.of("commentId", commentId)));
+        log.info("댓글 상세 정보 조회 완료: commentId={}", commentId);
+        return CommentDto.from(comment);
+    }
+
+    // 리뷰 댓글 목록 조회
+    @Transactional(readOnly = true)
+    @Override
+    public CursorPageResponseCommentDto getComments(UUID reviewId){
+
     }
 }
