@@ -9,6 +9,7 @@ import com.sprint.sb06deokhugamteam01.service.comment.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -87,9 +88,15 @@ public class CommentController {
     // 리뷰 댓글 목록 조회
     @GetMapping
     public ResponseEntity<CursorPageResponseCommentDto> getComments(@RequestParam("reviewId") UUID reviewId,
-                                                                    @RequestParam(defaultValue = "DESC") SortDirection direction,
+                                                                    @RequestParam(defaultValue = "DESC") Sort.Direction direction,
                                                                     @RequestParam(required = false) String cursor,
                                                                     @RequestParam(required = false)LocalDateTime after,
                                                                     @RequestParam(defaultValue = "50") int limit){
+        log.info("리뷰 댓글 목록 조회 요청: reviewId={}", reviewId);
+        CursorPageResponseCommentDto comments = commentService.getComments();
+        log.debug("리뷰 댓글 목록 조회 응답: reviewID={}", reviewId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(comments);
     }
 }
