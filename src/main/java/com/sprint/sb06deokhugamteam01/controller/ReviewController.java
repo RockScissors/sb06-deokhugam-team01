@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-@RestController("/api/reviews")
+@RestController
+@RequestMapping("/api/reviews")
 @RequiredArgsConstructor
 public class ReviewController {
 
@@ -33,7 +34,7 @@ public class ReviewController {
 
     @GetMapping
     public ResponseEntity<CursorPageResponseReviewDto> getReviews(
-            @RequestParam CursorPageReviewRequest request,
+            @ModelAttribute CursorPageReviewRequest request,
             @RequestHeader UUID requestUserId
     ) {
         return ResponseEntity
@@ -42,7 +43,7 @@ public class ReviewController {
 
     @GetMapping("/popular")
     public ResponseEntity<CursorPageResponsePopularReviewDto> getPopularReviews(
-            @RequestParam CursorPagePopularReviewRequest request,
+            @ModelAttribute CursorPagePopularReviewRequest request,
             @RequestHeader UUID requestUserId
     ) {
         return ResponseEntity
@@ -57,11 +58,12 @@ public class ReviewController {
                 .ok(reviewService.updateReview(reviewId, updateRequest, requestUserId));
     }
 
-    @PatchMapping("/{reviewId}")
+    @PostMapping("/{reviewId}/like")
     public ResponseEntity<ReviewLikeDto> likeReview(@PathVariable UUID reviewId,
                                                     @RequestHeader UUID requestUserId) {
         return ResponseEntity
-                .ok(reviewService.likeReview(reviewId, requestUserId));
+                .status(HttpStatus.CREATED)
+                .body(reviewService.likeReview(reviewId, requestUserId));
     }
 
     @DeleteMapping("/{reviewId}")
@@ -69,7 +71,7 @@ public class ReviewController {
                                              @RequestHeader UUID requestUserId) {
         reviewService.deleteReview(reviewId, requestUserId);
         return ResponseEntity
-                .status(HttpStatus.NO_CONTENT).build();
+                .noContent().build();
     }
 
     @DeleteMapping("/{reviewId}/hard")
@@ -77,7 +79,7 @@ public class ReviewController {
                                                  @RequestHeader UUID requestUserId) {
         reviewService.hardDeleteReview(reviewId, requestUserId);
         return ResponseEntity
-                .status(HttpStatus.NO_CONTENT).build();
+                .noContent().build();
     }
 
 }
