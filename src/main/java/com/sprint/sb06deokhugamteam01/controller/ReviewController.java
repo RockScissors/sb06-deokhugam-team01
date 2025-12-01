@@ -18,7 +18,7 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping
-    public ResponseEntity<ReviewDto> createReview(@RequestBody ReviewCreateRequest request) {
+    public ResponseEntity<ReviewDto> createReview(@RequestBody @Valid ReviewCreateRequest request) {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -52,7 +52,7 @@ public class ReviewController {
 
     @PatchMapping("/{reviewId}")
     public ResponseEntity<ReviewDto> updateReview(@PathVariable UUID reviewId,
-                                                  @RequestBody ReviewUpdateRequest updateRequest,
+                                                  @RequestBody @Valid ReviewUpdateRequest updateRequest,
                                                   @RequestHeader UUID requestUserId) {
         return ResponseEntity
                 .ok(reviewService.updateReview(reviewId, updateRequest, requestUserId));
