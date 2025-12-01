@@ -101,14 +101,14 @@ public class CommentServiceImpl implements CommentService {
     }
 
     // 리뷰 댓글 목록 조회
-    @Transactional(readOnly = true)
-    @Override
-    public CursorPageCommentResponse getComments(CommentListRequest request) {
-        if(!reviewRepository.existsById(request.reviewId())) {
-            throw new ReviewNotFoundException(Map.of("reviewId", request.reviewId()));
-        }
-
-        log.info("리뷰 댓글 목록 조회 완료: reviewId={}", request.reviewId());
-        return
-    }
+//    @Transactional(readOnly = true)
+//    @Override
+//    public CursorPageCommentResponse getComments(CommentListRequest request) {
+//        if(!reviewRepository.existsById(request.reviewId())) {
+//            throw new ReviewNotFoundException(Map.of("reviewId", request.reviewId()));
+//        }
+//
+//        log.info("리뷰 댓글 목록 조회 완료: reviewId={}", request.reviewId());
+//        return
+//    }
 }
