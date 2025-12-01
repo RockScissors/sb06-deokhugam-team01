@@ -33,7 +33,7 @@ public interface BookQRepository extends QuerydslJpaRepository<Book, UUID> {
 
         return new SliceImpl<>(
                 bookList,
-                Pageable.ofSize(bookList.size()-1),
+                Pageable.ofSize(pagingBookRequest.limit()),
                 bookList.size() > pagingBookRequest.limit()
         );
 
