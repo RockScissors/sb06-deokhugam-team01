@@ -8,11 +8,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.servlet.View;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,6 +22,7 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -28,7 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * BDDMockito 양식으로 작성
  */
 @WebMvcTest(ReviewController.class)
-@Import({GlobalExceptionHandler.class})
 class ReviewControllerTest {
 
     @Autowired
@@ -55,14 +57,14 @@ class ReviewControllerTest {
                 .id(reviewId)
                 .bookId(bookId)
                 .userId(userId)
-                .content("응답DTO")
+                .content("응답DTO1 응답DTO1 응답DTO1 응답DTO1")
                 .build();
 
         response2 = ReviewDto.builder()
                 .id(reviewId)
                 .bookId(bookId2)
                 .userId(userId)
-                .content("응답DTO2")
+                .content("응답DTO2 응답DTO2 응답DTO2 응답DTO2")
                 .build();
     }
 
@@ -74,7 +76,7 @@ class ReviewControllerTest {
         ReviewCreateRequest request = ReviewCreateRequest.builder()
                 .bookId(bookId)
                 .userId(userId)
-                .content("생성 테스트")
+                .content("생성 테스트 내용 - 20자를 넘는 정상 요청")
                 .rating(5)
                 .build();
 
@@ -94,11 +96,30 @@ class ReviewControllerTest {
                         .content(objectMapper.writeValueAsString(request))) // Body 변환
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.content").value("생성 테스트"));
+                .andExpect(jsonPath("$.content").value(request.content()));
     }
 
     @Test
-    @DisplayName("리뷰 단건 조회 성공 - 헤더 포함")
+    @DisplayName("리뷰 생성 실패 - 본문 글자수 미달")
+    void createReview_failure() throws Exception {
+
+        // given
+        ReviewCreateRequest invalidRequest = ReviewCreateRequest.builder()
+                .bookId(bookId)
+                .userId(userId)
+                .content("잘못된 본문 - 20자보다 짧음")
+                .rating(5)
+                .build();
+
+        // when & then
+        mockMvc.perform(post("/api/reviews")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("리뷰 단건 조회 성공")
     void getReview_success() throws Exception {
 
         // given
@@ -107,14 +128,14 @@ class ReviewControllerTest {
 
         // when & then
         mockMvc.perform(get("/api/reviews/{reviewId}", reviewId)
-                        .header("requestUserId", requestUserId))
+                        .header("Deokhugam-Request-User-ID", requestUserId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(reviewId.toString()));
     }
 
     @Test
     @DisplayName("리뷰 다건 조회 성공")
-    void getReviews() throws Exception {
+    void getReviews_success() throws Exception {
 
         // given
         CursorPageReviewRequest request = CursorPageReviewRequest.builder()
@@ -142,7 +163,7 @@ class ReviewControllerTest {
                         .param("userId", request.userId().toString())
                         .param("bookId", request.bookId().toString())
                         .param("limit", request.limit().toString())
-                        .header("requestUserId", requestUserId))
+                        .header("Deokhugam-Request-User-ID", requestUserId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").exists())
                 .andExpect(jsonPath("$.content").isArray())
@@ -177,7 +198,7 @@ class ReviewControllerTest {
         mockMvc.perform(get("/api/reviews/popular")
                         .param("period", request.period().toString())
                         .param("limit", request.limit().toString())
-                        .header("requestUserId", requestUserId))
+                        .header("Deokhugam-Request-User-ID", requestUserId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").exists())
                 .andExpect(jsonPath("$.content").isArray())
@@ -188,18 +209,38 @@ class ReviewControllerTest {
     }
 
     @Test
+    @DisplayName("인기 리뷰 조회 실패 - 잘못된 limit 요청")
+    void getPopularReviews_failure() throws Exception {
+
+        // given
+        CursorPagePopularReviewRequest request = CursorPagePopularReviewRequest.builder()
+                .period(CursorPagePopularReviewRequest.RankCriteria.DAILY)
+                .limit(-1)
+                .build();
+
+        // when & then
+        mockMvc.perform(get("/api/reviews/popular")
+                        .param("period", request.period().toString())
+                        .param("limit", request.limit().toString())
+                        .header("Deokhugam-Request-User-ID", requestUserId))
+                .andExpect(status().isBadRequest());
+
+        verify(reviewService, never()).getPopularReviews(any(), any());
+    }
+
+    @Test
     @DisplayName("리뷰 수정 성공")
     void updateReview_success() throws Exception {
 
         // given
         ReviewUpdateRequest updateRequest = ReviewUpdateRequest.builder()
-                .content("수정된 내용")
+                .content("수정된내용 수정된내용 수정된내용 수정된내용 ")
                 .rating(4)
                 .build();
 
         ReviewDto response = ReviewDto.builder()
                 .id(reviewId)
-                .bookId(bookId)
+                .bookId(bookId2)
                 .userId(userId)
                 .content(updateRequest.content())
                 .rating(updateRequest.rating())
@@ -210,15 +251,34 @@ class ReviewControllerTest {
 
         // when & then
         mockMvc.perform(patch("/api/reviews/{reviewId}", reviewId)
-                        .header("requestUserId", requestUserId)
+                        .header("Deokhugam-Request-User-ID", requestUserId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(reviewId.toString()))
-                .andExpect(jsonPath("$.content").value("수정된 내용"))
-                .andExpect(jsonPath("$.rating").value(4));
+                .andExpect(jsonPath("$.content").value(updateRequest.content()))
+                .andExpect(jsonPath("$.rating").value(updateRequest.rating()));
 
         verify(reviewService).updateReview(eq(reviewId), any(ReviewUpdateRequest.class), eq(requestUserId));
+    }
+
+    @Test
+    @DisplayName("리뷰 수정 실패 - 평점 범위 초과")
+    void updateReview_fail() throws Exception {
+
+        // given
+        ReviewUpdateRequest updateRequest = ReviewUpdateRequest.builder()
+                .rating(6)
+                .build();
+
+        // when & then
+        mockMvc.perform(patch("/api/reviews/{reviewId}", reviewId)
+                        .header("Deokhugam-Request-User-ID", requestUserId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isBadRequest());
+
+        verify(reviewService, never()).updateReview(any(), any(), any());
     }
 
     @Test
@@ -238,7 +298,7 @@ class ReviewControllerTest {
         // when & then
         mockMvc.perform(post("/api/reviews/{reviewId}/like", reviewId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("requestUserId", requestUserId))
+                        .header("Deokhugam-Request-User-ID", requestUserId))
 
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.reviewId").value(reviewId.toString()))
@@ -257,7 +317,7 @@ class ReviewControllerTest {
 
         // when & then
         mockMvc.perform(delete("/api/reviews/{reviewId}", reviewId)
-                        .header("requestUserId", userId))
+                        .header("Deokhugam-Request-User-ID", userId))
                 .andExpect(status().isNoContent());
 
         verify(reviewService).deleteReview(reviewId, userId);
@@ -273,11 +333,9 @@ class ReviewControllerTest {
 
         // when & then
         mockMvc.perform(delete("/api/reviews/{reviewId}/hard", reviewId)
-                        .header("requestUserId", userId))
+                        .header("Deokhugam-Request-User-ID", userId))
                 .andExpect(status().isNoContent());
 
         verify(reviewService).hardDeleteReview(reviewId, userId);
     }
 }
-
-

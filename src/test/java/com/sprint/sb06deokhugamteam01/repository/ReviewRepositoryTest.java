@@ -1,4 +1,4 @@
-package com.sprint.sb06deokhugamteam01.service.review;
+package com.sprint.sb06deokhugamteam01.repository;
 
 import com.sprint.sb06deokhugamteam01.domain.Book;
 import com.sprint.sb06deokhugamteam01.domain.User;
@@ -6,7 +6,7 @@ import com.sprint.sb06deokhugamteam01.domain.review.PopularReviewSearchCondition
 import com.sprint.sb06deokhugamteam01.domain.review.Review;
 import com.sprint.sb06deokhugamteam01.domain.review.ReviewSearchCondition;
 import com.sprint.sb06deokhugamteam01.dto.review.CursorPagePopularReviewRequest;
-import com.sprint.sb06deokhugamteam01.repository.review.ReviewRepository;
+import com.sprint.sb06deokhugamteam01.repository.review.ReviewQRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class ReviewRepositoryTest {
 
     @Autowired
-    private ReviewRepository reviewRepository;
+    private ReviewQRepository reviewQRepository;
 
     @Autowired
     private EntityManager em; // 데이터 준비를 위해 사용
@@ -154,7 +154,7 @@ class ReviewRepositoryTest {
                 .build();
 
         // when
-        Slice<Review> slice = reviewRepository.getReviews(condition, pageable);
+        Slice<Review> slice = reviewQRepository.getReviews(condition, pageable);
 
         // then
         assertThat(slice.getContent()).hasSize(2);
@@ -174,7 +174,7 @@ class ReviewRepositoryTest {
                 .limit(2)
                 .build();
         // when
-        Slice<Review> slice = reviewRepository.getReviews(condition, pageable);
+        Slice<Review> slice = reviewQRepository.getReviews(condition, pageable);
 
         // then
         assertThat(slice.getContent()).hasSize(1);
@@ -198,7 +198,7 @@ class ReviewRepositoryTest {
                 .build();
 
         // when
-        Slice<Review> slice = reviewRepository.getReviews(condition, pageable);
+        Slice<Review> slice = reviewQRepository.getReviews(condition, pageable);
 
         // then
         assertThat(slice.getContent()).hasSize(2);
@@ -219,7 +219,7 @@ class ReviewRepositoryTest {
                 .build();
 
         // when
-        Slice<Review> slice = reviewRepository.getReviews(condition, pageable);
+        Slice<Review> slice = reviewQRepository.getReviews(condition, pageable);
 
         // then
         assertThat(slice.getContent()).hasSize(1);
@@ -238,7 +238,7 @@ class ReviewRepositoryTest {
                 .build();
 
         // when
-        Slice<Review> slice = reviewRepository.getReviews(condition, pageable);
+        Slice<Review> slice = reviewQRepository.getReviews(condition, pageable);
 
         // then
         assertThat(slice.getContent()).hasSize(4);
@@ -258,7 +258,7 @@ class ReviewRepositoryTest {
                 .build();
 
         // when
-        Slice<Review> slice = reviewRepository.getPopularReviews(condition, pageable);
+        Slice<Review> slice = reviewQRepository.getPopularReviews(condition, pageable);
 
         // then
         assertThat(slice.getContent()).hasSize(2);
@@ -283,7 +283,7 @@ class ReviewRepositoryTest {
                 .build();
 
         // when
-        Slice<Review> slice = reviewRepository.getPopularReviews(condition, pageable);
+        Slice<Review> slice = reviewQRepository.getPopularReviews(condition, pageable);
 
         // then
         assertThat(slice.getContent()).hasSize(1);
@@ -309,7 +309,7 @@ class ReviewRepositoryTest {
 
         // when & then
         assertThrows(IllegalArgumentException.class, () -> {
-            reviewRepository.getPopularReviews(condition, pageable);
+            reviewQRepository.getPopularReviews(condition, pageable);
         });
     }
 

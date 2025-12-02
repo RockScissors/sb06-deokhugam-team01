@@ -36,7 +36,7 @@ public class ReviewController {
 
     @GetMapping
     public ResponseEntity<CursorPageResponseReviewDto> getReviews(
-            @ModelAttribute CursorPageReviewRequest request,
+            @ModelAttribute @Valid CursorPageReviewRequest request,
             @RequestHeader("Deokhugam-Request-User-ID") UUID requestUserId
     ) {
         return ResponseEntity
@@ -45,7 +45,7 @@ public class ReviewController {
 
     @GetMapping("/popular")
     public ResponseEntity<CursorPageResponsePopularReviewDto> getPopularReviews(
-            @ModelAttribute CursorPagePopularReviewRequest request,
+            @ModelAttribute @Valid CursorPagePopularReviewRequest request,
             @RequestHeader("Deokhugam-Request-User-ID") UUID requestUserId
     ) {
         return ResponseEntity
