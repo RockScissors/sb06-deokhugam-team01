@@ -93,7 +93,7 @@ public class BookServiceImpl implements  BookService {
 
     @Transactional
     @Override
-    public BookDto createBookByIsbnImage(MultipartFile image) {
+    public String getIsbnByImage(MultipartFile image) {
 
         String isbn = null;
         try {
@@ -102,22 +102,7 @@ public class BookServiceImpl implements  BookService {
             throw new InvalidIsbnException(new HashMap<>());
         }
 
-        if (bookRepository.existsByIsbn(isbn) && bookRepository.findByIsbn(isbn).get().isActive()) {
-            throw new AlreadyExistsIsbnException(detailMap("isbn", isbn));
-        }
-
-        BookDto bookDto = bookSearchService.searchBookByIsbn(isbn);
-
-        BookCreateRequest bookCreateRequest = new BookCreateRequest(
-                bookDto.title(),
-                bookDto.author(),
-                bookDto.description(),
-                bookDto.publisher(),
-                bookDto.publishedDate(),
-                bookDto.isbn()
-        );
-
-        return BookDto.fromEntity(bookRepository.save(BookCreateRequest.fromDto(bookCreateRequest)));
+        return isbn;
 
     }
 

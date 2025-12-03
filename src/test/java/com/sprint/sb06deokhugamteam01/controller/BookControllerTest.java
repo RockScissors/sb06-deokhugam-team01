@@ -218,7 +218,7 @@ class BookControllerTest {
 
     @Test
     @DisplayName("createBookByIsbnImage 성공 테스트")
-    void createBookByIsbnImage_Success() throws Exception {
+    void getIsbnByImage_Success() throws Exception {
 
         //given
         String isbn = "1234567890";
@@ -230,18 +230,15 @@ class BookControllerTest {
         );
 
         //when
-        when(bookService.createBookByIsbnImage(any(MultipartFile.class)))
-                .thenReturn(bookDto);
+        when(bookService.getIsbnByImage(any(MultipartFile.class)))
+                .thenReturn(bookDto.isbn());
 
         //then
         mockMvc.perform(MockMvcRequestBuilders
                         .multipart("/api/books/isbn/ocr")
                         .file("image", thumbnailImage.getBytes())
                 )
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.title").value(bookDto.title()))
-                .andExpect(jsonPath("$.author").value(bookDto.author()))
-                .andExpect(jsonPath("$.isbn").value(bookDto.isbn()));
+                .andExpect(status().isOk());
 
     }
 
