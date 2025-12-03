@@ -1,6 +1,7 @@
 package com.sprint.sb06deokhugamteam01.service.review;
 
 import com.sprint.sb06deokhugamteam01.domain.Book;
+import com.sprint.sb06deokhugamteam01.domain.ReviewLike;
 import com.sprint.sb06deokhugamteam01.domain.review.PopularReviewSearchCondition;
 import com.sprint.sb06deokhugamteam01.domain.review.Review;
 import com.sprint.sb06deokhugamteam01.domain.User;
@@ -11,8 +12,10 @@ import com.sprint.sb06deokhugamteam01.exception.review.ReviewAlreadyExistsExcept
 import com.sprint.sb06deokhugamteam01.exception.review.ReviewNotFoundException;
 import com.sprint.sb06deokhugamteam01.exception.user.InvalidUserException;
 import com.sprint.sb06deokhugamteam01.exception.user.UserNotFoundException;
+import com.sprint.sb06deokhugamteam01.mapper.ReviewMapper;
 import com.sprint.sb06deokhugamteam01.repository.BookRepository;
 import com.sprint.sb06deokhugamteam01.repository.CommentRepository;
+import com.sprint.sb06deokhugamteam01.repository.review.ReviewLikeRepository;
 import com.sprint.sb06deokhugamteam01.repository.review.ReviewRepository;
 import com.sprint.sb06deokhugamteam01.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,9 +35,11 @@ import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final ReviewLikeRepository reviewLikeRepository;
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
     private final CommentRepository commentRepository;
+    private final ReviewMapper reviewMapper;
 
     @Override
     @Transactional
@@ -68,25 +73,28 @@ public class ReviewServiceImpl implements ReviewService {
 
         Review savedReview = reviewRepository.save(review);
 
-        return ReviewDto.from(savedReview);
+        return reviewMapper.toDto(savedReview, user);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ReviewDto getReview(UUID reviewId, UUID requestUserId) {
 
-        userRepository.findById(requestUserId)
+        User user = userRepository.findById(requestUserId)
                 .orElseThrow(() -> new UserNotFoundException(detailMap("userId", requestUserId)));
 
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException(detailMap("reviewId", reviewId)));
 
-        return ReviewDto.from(review);
+        return reviewMapper.toDto(review, user);
     }
 
     @Override
     @Transactional(readOnly = true)
     public CursorPageResponseReviewDto getReviews(CursorPageReviewRequest request, UUID requestUserId) {
+
+        User user = userRepository.findById(requestUserId)
+                .orElseThrow(() -> new UserNotFoundException(detailMap("userId", requestUserId)));
 
         // 기본값 처리
         int limit = request.limit() != null
@@ -124,7 +132,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         // DTO로 변환
         List<ReviewDto> content = slice.getContent().stream()
-                .map(ReviewDto::from) // TODO 조회하는 사용자가 좋아요 눌렀는지 계산 필요
+                .map(review -> reviewMapper.toDto(review, user))
                 .toList();
 
         // 커서 페이징 후처리
@@ -153,6 +161,10 @@ public class ReviewServiceImpl implements ReviewService {
     public CursorPageResponsePopularReviewDto getPopularReviews(CursorPagePopularReviewRequest request,
                                                                 UUID requestUserId
     ) {
+
+        User user = userRepository.findById(requestUserId)
+                .orElseThrow(() -> new UserNotFoundException(detailMap("userId", requestUserId)));
+
         // 기본값 처리
         int limit = request.limit() != null
                 ? request.limit()
@@ -184,7 +196,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         // DTO로 변환
         List<ReviewDto> content = slice.getContent().stream()
-                .map(ReviewDto::from) // TODO 조회하는 사용자가 좋아요 눌렀는지 계산 필요
+                .map(review -> reviewMapper.toDto(review, user))
                 .toList();
 
         // 커서 페이징 후처리
@@ -233,7 +245,7 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         Review savedReview = reviewRepository.save(review);
-        return ReviewDto.from(savedReview);
+        return reviewMapper.toDto(savedReview, user);
     }
 
     @Override
@@ -261,31 +273,46 @@ public class ReviewServiceImpl implements ReviewService {
                 .orElseThrow(() -> new ReviewNotFoundException(detailMap("reviewId", reviewId)));
 
         reviewRepository.delete(review);
-        // 연관관계 매핑된 좋아요, 댓글, 활동점수 영구 삭제
-        // TODO 좋아요를 DB에 저장해야 하지 않나?
         commentRepository.deleteAllByReview(review);
+        reviewLikeRepository.deleteByReview(review);
     }
 
     @Override
     @Transactional
     public ReviewLikeDto likeReview(UUID reviewId, UUID requestUserId) {
 
-        userRepository.findById(requestUserId)
+        User user = userRepository.findById(requestUserId)
                 .orElseThrow(() -> new UserNotFoundException(detailMap("userId", requestUserId)));
 
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException(detailMap("reviewId", reviewId)));
 
-        // TODO 유저-좋아요 정보 저장 필요
-        review.increaseLikeCount();
+        boolean liked;
+
+        Optional<ReviewLike> existingReviewLike = reviewLikeRepository.findByUserAndReview(user, review);
+        if (existingReviewLike.isPresent()) {
+            reviewLikeRepository.delete(existingReviewLike.get());
+            review.decreaseLikeCount();
+            liked = false;
+        }
+        else {
+            ReviewLike reviewLike = ReviewLike.builder()
+                    .user(user)
+                    .review(review)
+                    .build();
+            reviewLikeRepository.save(reviewLike);
+            review.increaseLikeCount();
+            liked = true;
+        }
+
+
         reviewRepository.save(review);
 
         return ReviewLikeDto.builder()
                 .reviewId(review.getId())
                 .userId(requestUserId)
-                .liked(true)
+                .liked(liked)
                 .build();
-
     }
 
     private Map<String, Object> detailMap(String key, Object value) {
