@@ -47,6 +47,9 @@ class ReviewServiceTest {
     @Mock
     private BookRepository bookRepository;
 
+    @Mock
+    private CommentRepository commentRepository;
+
     @InjectMocks
     private ReviewServiceImpl reviewService;
 
@@ -58,18 +61,11 @@ class ReviewServiceTest {
     private final UUID requestUserId = UUID.randomUUID();
 
     private final UUID bookId = UUID.randomUUID();
-    private final UUID bookId2 = UUID.randomUUID();
 
-    // @Spy
     Review testReview;
-
-    // @Spy
     Review testReview2;
 
-    // @Spy
     Book testBook;
-
-    // @Spy
     Book testBook2;
 
     User testUser;
@@ -98,29 +94,17 @@ class ReviewServiceTest {
 
 
         testBook = Book.builder()
-                // .id(bookId)
                 .title("testBook")
                 .author("author")
                 .publisher("publisher")
                 .publishedDate(LocalDate.now())
-                // .reviewCount(10)
-                // .rating(4.5)
-                // .createdAt(LocalDateTime.now())
-                // .updatedAt(LocalDateTime.now())
-                // .isActive(true)
                 .build();
 
         testBook2 = Book.builder()
-                // .id(bookId2)
                 .title("testBook2")
                 .author("author2")
                 .publisher("publisher2")
                 .publishedDate(LocalDate.now())
-                // .reviewCount(10)
-                // .rating(4.0)
-                // .createdAt(LocalDateTime.now())
-                // .updatedAt(LocalDateTime.now())
-                // .isActive(true)
                 .build();
 
         testReview = Review.builder()
@@ -394,6 +378,7 @@ class ReviewServiceTest {
 
         // then
         verify(reviewRepository, times(1)).delete(testReview);
+        verify(commentRepository, times(1)).deleteAllByReview(testReview);
     }
 
     @Test
