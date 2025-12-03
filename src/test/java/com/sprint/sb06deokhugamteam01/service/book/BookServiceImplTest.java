@@ -273,7 +273,7 @@ class BookServiceImplTest {
 
     @Test
     @DisplayName("createBookByIsbnImage 성공 테스트")
-    void createBookByIsbnImage_Success() {
+    void getIsbnByImage_Success() {
 
         //given
         String isbn = "9788966262084";
@@ -281,47 +281,12 @@ class BookServiceImplTest {
         when(ocrService.extractIsbnFromImage(any(byte[].class), any(String.class)))
                 .thenReturn(isbn);
 
-        when(bookRepository.existsByIsbn(isbn))
-                .thenReturn(false);
-
-        when(bookSearchService.searchBookByIsbn(isbn))
-                .thenReturn(bookDto);
-
-        when(bookRepository.save(any(Book.class)))
-                .thenReturn(book);
-
         //when
-        BookDto result = bookService.createBookByIsbnImage(new MockMultipartFile("isbnImage.png", new byte[]{}));
+        String result = bookService.getIsbnByImage(new MockMultipartFile("isbnImage.png", new byte[]{}));
 
         //then
         assertNotNull(result);
-        assertEquals(book.getIsbn(), result.isbn());
-
-    }
-
-    @Test
-    @DisplayName("createBookByIsbnImage 실패 테스트 - 이미 존재하는 ISBN")
-    void createBookByIsbnImage_Fail_AllReadyExistsIsbn() {
-
-        //given
-        String isbn = "9788966262084";
-
-        when(ocrService.extractIsbnFromImage(any(byte[].class), any(String.class)))
-                .thenReturn(isbn);
-
-        when(bookRepository.existsByIsbn(isbn))
-                .thenReturn(true);
-
-        when(bookRepository.findByIsbn(isbn))
-                .thenReturn(Optional.of(book));
-
-        //when
-        AlreadyExistsIsbnException exception = assertThrows(AlreadyExistsIsbnException.class, () -> {
-            bookService.createBookByIsbnImage(new MockMultipartFile("isbnImage.png", new byte[]{}));
-        });
-
-        //then
-        assertEquals("All ready exists ISBN", exception.getMessage());
+        assertEquals(book.getIsbn(), result);
 
     }
 
