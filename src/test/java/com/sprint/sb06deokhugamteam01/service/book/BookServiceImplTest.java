@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.SliceImpl;
 
 import java.time.LocalDate;
@@ -49,6 +50,9 @@ class BookServiceImplTest {
 
     private Book book;
     private BookDto bookDto;
+
+    @Value("naver.books.api-key")
+    private String apiKey;
 
     @BeforeEach
     void setUp() {
