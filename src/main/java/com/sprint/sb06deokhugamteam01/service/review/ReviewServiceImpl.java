@@ -2,11 +2,18 @@ package com.sprint.sb06deokhugamteam01.service.review;
 
 import com.sprint.sb06deokhugamteam01.domain.Book;
 import com.sprint.sb06deokhugamteam01.domain.ReviewLike;
-import com.sprint.sb06deokhugamteam01.domain.review.PopularReviewSearchCondition;
-import com.sprint.sb06deokhugamteam01.domain.review.Review;
+import com.sprint.sb06deokhugamteam01.dto.review.PopularReviewSearchCondition;
+import com.sprint.sb06deokhugamteam01.domain.Review;
 import com.sprint.sb06deokhugamteam01.domain.User;
-import com.sprint.sb06deokhugamteam01.domain.review.ReviewSearchCondition;
-import com.sprint.sb06deokhugamteam01.dto.review.*;
+import com.sprint.sb06deokhugamteam01.dto.review.ReviewSearchCondition;
+import com.sprint.sb06deokhugamteam01.dto.review.request.CursorPagePopularReviewRequest;
+import com.sprint.sb06deokhugamteam01.dto.review.request.CursorPageReviewRequest;
+import com.sprint.sb06deokhugamteam01.dto.review.request.ReviewCreateRequest;
+import com.sprint.sb06deokhugamteam01.dto.review.request.ReviewUpdateRequest;
+import com.sprint.sb06deokhugamteam01.dto.review.response.CursorPageResponsePopularReviewDto;
+import com.sprint.sb06deokhugamteam01.dto.review.response.CursorPageResponseReviewDto;
+import com.sprint.sb06deokhugamteam01.dto.review.response.ReviewDto;
+import com.sprint.sb06deokhugamteam01.dto.review.response.ReviewLikeDto;
 import com.sprint.sb06deokhugamteam01.exception.book.NoSuchBookException;
 import com.sprint.sb06deokhugamteam01.exception.review.InvalidReviewCursorException;
 import com.sprint.sb06deokhugamteam01.exception.review.ReviewAlreadyExistsException;
@@ -29,8 +36,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
-
-import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
 @Service
 @RequiredArgsConstructor
