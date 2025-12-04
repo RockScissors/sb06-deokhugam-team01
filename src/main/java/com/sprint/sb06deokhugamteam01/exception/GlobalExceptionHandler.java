@@ -1,26 +1,72 @@
 package com.sprint.sb06deokhugamteam01.exception;
 
-import com.sprint.sb06deokhugamteam01.dto.ErrorDto;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.sprint.sb06deokhugamteam01.dto.ErrorDto;
+
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorDto> handleException(Exception exception) {
-        log.error("예상치 못한 오류 발생: {}", exception.getMessage(), exception);
-        return ErrorDto.toResponseEntity(exception);
+    @ExceptionHandler(RootException.class)
+    public ResponseEntity<ErrorDto> handleRootException(RootException ex) {
+        ErrorCode errorCode = ex.getErrorCode();
+        log.warn("Handled custom exception: {}", ex.getMessage(), ex);
+
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(ErrorDto.builder()
+                        .message(errorCode.getMessage())
+                        .status(errorCode.getStatus())
+                        .code(errorCode.getCode())
+                        .details(ex.getDetails())
+                        .timestamp(ex.getTimestamp())
+                        .exceptionType(ex.getClass().getSimpleName())
+                        .build());
     }
 
-    @ExceptionHandler(RootException.class)
-    public ResponseEntity<ErrorDto> handleRootException(RootException exception){
-        log.error("커스텀 예외 발생: code={}, message={}", exception.getErrorCode(), exception.getMessage());
-        return ErrorDto.toResponseEntity(exception);
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorDto> handleValidationException(MethodArgumentNotValidException ex) {
+        ErrorCode errorCode = ErrorCode.INVALID_REQUEST;
+        Map<String, Object> details = ex.getBindingResult().getFieldErrors().stream()
+                .collect(Collectors.toMap(
+                        fieldError -> fieldError.getField(),
+                        fieldError -> fieldError.getDefaultMessage(),
+                        (existing, replacement) -> existing));
+
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(ErrorDto.builder()
+                        .message(errorCode.getMessage())
+                        .status(errorCode.getStatus())
+                        .code(errorCode.getCode())
+                        .details(details)
+                        .timestamp(LocalDateTime.now())
+                        .exceptionType(ex.getClass().getSimpleName())
+                        .build());
     }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorDto> handleGeneralException(Exception ex) {
+        ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
+        log.error("Unhandled exception", ex);
+
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(ErrorDto.builder()
+                        .message(errorCode.getMessage())
+                        .status(errorCode.getStatus())
+                        .code(errorCode.getCode())
+                        .details(Map.of())
+                        .timestamp(LocalDateTime.now())
+                        .exceptionType(ex.getClass().getSimpleName())
+                        .build());
+    }
+
 }

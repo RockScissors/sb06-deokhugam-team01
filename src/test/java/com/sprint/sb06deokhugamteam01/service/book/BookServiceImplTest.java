@@ -285,7 +285,7 @@ class BookServiceImplTest {
 
     }
 
-//    //외부 api 테스트이므로 현재는 실패
+    //외부 api 테스트이므로 현재는 실패
 //    @Test
 //    @DisplayName("createBook 실패 테스트 - S3 업로드 오류")
 //    void createBook_Fail_S3UploadError() {
