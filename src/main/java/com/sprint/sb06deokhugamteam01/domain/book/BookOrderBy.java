@@ -11,4 +11,18 @@ public enum BookOrderBy {
 
     private final String fieldName;
 
+    public String getFieldName() {
+        return fieldName;
+    }
+
+    public static BookOrderBy withFieldName(String fieldName) {
+
+        for (BookOrderBy orderBy : BookOrderBy.values()) {
+            if (orderBy.getFieldName().equals(fieldName)) {
+                return orderBy;
+            }
+        }
+        throw new IllegalArgumentException("Invalid field name: " + fieldName);
+    }
+
 }

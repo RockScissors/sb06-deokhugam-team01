@@ -1,6 +1,5 @@
 package com.sprint.sb06deokhugamteam01.dto.book.request;
 
-import com.sprint.sb06deokhugamteam01.domain.book.BookOrderBy;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;

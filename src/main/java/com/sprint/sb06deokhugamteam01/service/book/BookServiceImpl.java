@@ -60,7 +60,7 @@ public class BookServiceImpl implements  BookService {
                         .limit(bookSlice.getContent().size() - (bookSlice.hasNext() ? 1 : 0))
                         .toList())
                 .nextCursor(bookSlice.hasNext() ?
-                        switch (BookOrderBy.valueOf(pagingBookRequest.orderBy())) {
+                        switch (BookOrderBy.withFieldName(pagingBookRequest.orderBy())) {
                             case TITLE -> bookSlice.getContent().get(bookSlice.getContent().size() -1).getTitle();
                             case PUBLISHED_DATE -> bookSlice.getContent().get(bookSlice.getContent().size() -1).getPublishedDate().toString();
                             case RATING -> String.valueOf(bookSlice.getContent().get(bookSlice.getContent().size() -1).getRating());
