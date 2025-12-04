@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -266,7 +267,7 @@ class BookControllerTest {
 
         //when
         when(bookService.getBookById(bookDto.id()))
-                .thenThrow(NoSuchBookException.class);
+                .thenThrow(new NoSuchBookException(Map.of()));
 
         //then
         mockMvc.perform(MockMvcRequestBuilders.get("/api/books/{bookId}", bookDto.id()))
@@ -320,7 +321,7 @@ class BookControllerTest {
 
         //when
         when(bookService.getBookByIsbn(bookDto.isbn()))
-                .thenThrow(NoSuchBookException.class);
+                .thenThrow(new NoSuchBookException(Map.of()));
 
         //then
         mockMvc.perform(MockMvcRequestBuilders.get("/api/books/info")

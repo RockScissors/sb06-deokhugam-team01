@@ -262,11 +262,11 @@ class BookServiceImplTest {
                 .thenReturn(isbn);
 
         //when
-        String result = bookService.getIsbnByImage(new MockMultipartFile("isbnImage.png", new byte[]{}));
+        String result = bookService.getIsbnByImage(new MockMultipartFile("isbnImage.png", "isbnImage.png", "png",new byte[]{}));
 
         //then
         assertNotNull(result);
-        assertEquals(book.getIsbn(), result);
+        assertEquals(isbn, result);
 
     }
 
