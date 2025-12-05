@@ -13,6 +13,7 @@ public enum ErrorCode {
     INVALID_ISBN("Invalid ISBN", 400, "B004"),
     S3_UPLOAD_FAILED("S3 upload failed", 500, "COM003"),
     S3_OBJECT_NOT_FOUND("S3 object not found", 404, "COM004"),
+    S3_DELETE_FAILED("S3 delete failed", 500, "COM005"),
     USER_NOT_FOUND("User not found", 404, "U001"),
     INVALID_USER("Invalid user", 400, "U002"),
 
