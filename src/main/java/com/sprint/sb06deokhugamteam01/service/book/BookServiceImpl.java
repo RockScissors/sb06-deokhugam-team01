@@ -39,7 +39,7 @@ public class BookServiceImpl implements  BookService {
     @Override
     public BookDto getBookById(UUID id) {
 
-        Book book = bookRepository.findByIdAndIsActive(id, true)
+        Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new BookNotFoundException(detailMap("id", id)));
 
         String presignedUrl = s3StorageService.getPresignedUrl(book.getThumbnailUrl());
@@ -49,7 +49,13 @@ public class BookServiceImpl implements  BookService {
 
     @Override
     public BookDto getBookByIsbn(String isbn) {
-        return bookSearchService.searchBookByIsbn(isbn.replace("-", ""));
+
+        Book book = bookRepository.findByIsbn(isbn)
+                .orElseThrow(() -> new BookNotFoundException(detailMap("isbn", isbn)));
+
+        String presignedUrl = s3StorageService.getPresignedUrl(book.getThumbnailUrl());
+
+        return BookDto.fromEntityWithImageUrl(book, presignedUrl);
     }
 
     @Transactional(readOnly = true)
@@ -86,7 +92,7 @@ public class BookServiceImpl implements  BookService {
     @Override
     public BookDto createBook(BookCreateRequest bookCreateRequest, @Nullable MultipartFile file) {
 
-        if (bookRepository.existsByIsbnAndIsActive(bookCreateRequest.isbn(), true)) {
+        if (bookRepository.existsByIsbn(bookCreateRequest.isbn()) && bookRepository.findByIsbn(bookCreateRequest.isbn()).get().isActive()) {
             throw new AlreadyExistsIsbnException(detailMap("isbn", bookCreateRequest.isbn()));
         }
 
@@ -123,7 +129,7 @@ public class BookServiceImpl implements  BookService {
     @Override
     public BookDto updateBook(UUID id, BookUpdateRequest bookUpdateRequest, @Nullable MultipartFile file) {
 
-        Book book = bookRepository.findByIdAndIsActive(id, true)
+        Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new BookNotFoundException(detailMap("id", id)));
 
         if (!book.isActive()) {
@@ -146,20 +152,6 @@ public class BookServiceImpl implements  BookService {
                 bookUpdateRequest.publishedDate()
         );
 
-        //S3 파일 업로드 처리
-        if (file != null) {
-
-            s3StorageService.deleteObject(book.getThumbnailUrl());
-
-            UUID fileId = UUID.randomUUID();
-            try {
-                book.updateThumbnailUrl(s3StorageService.putObject(String.valueOf(fileId), file.getBytes()));
-            } catch (IOException e) {
-                throw new S3UploadFailedException(detailMap("fileName", Objects.requireNonNull(file.getOriginalFilename())));
-            }
-
-        }
-
         return BookDto.fromEntity(book);
 
     }
@@ -168,7 +160,7 @@ public class BookServiceImpl implements  BookService {
     @Override
     public void deleteBookById(UUID id) {
 
-        Book book = bookRepository.findByIdAndIsActive(id, true)
+        Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new BookNotFoundException(detailMap("id", id)));
 
         if (!book.isActive()) {
@@ -183,10 +175,9 @@ public class BookServiceImpl implements  BookService {
     @Override
     public void hardDeleteBookById(UUID id) {
 
-        Book book = bookRepository.findByIdAndIsActive(id, true)
-                .orElseThrow(() -> new BookNotFoundException(detailMap("id", id)));
-
-        s3StorageService.deleteObject(book.getThumbnailUrl());
+        if (!bookRepository.existsById(id)) {
+            throw new BookNotFoundException(detailMap("id", id));
+        }
 
         bookRepository.deleteById(id);
 
