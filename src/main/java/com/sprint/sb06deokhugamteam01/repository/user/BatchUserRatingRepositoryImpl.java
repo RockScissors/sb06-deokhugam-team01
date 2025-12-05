@@ -6,6 +6,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sprint.sb06deokhugamteam01.domain.batch.BatchUserRating;
 import com.sprint.sb06deokhugamteam01.domain.batch.PeriodType;
 import com.sprint.sb06deokhugamteam01.domain.batch.QBatchUserRating;
+import com.sprint.sb06deokhugamteam01.dto.User.request.PowerUserRequest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -16,47 +17,34 @@ import org.springframework.data.domain.SliceImpl;
 
 @Repository
 @RequiredArgsConstructor
-public class BatchUserRatingRepositoryImpl implements BatchUserRatingRepositoryCustom {
+public class BatchUserRatingRepositoryImpl implements CustomBatchUserRatingRepository {
 
     private final JPAQueryFactory queryFactory;
     private final QBatchUserRating bur = QBatchUserRating.batchUserRating;
 
     @Override
-    public Slice<BatchUserRating> getBatchUserRatingList(String period, String direction, String cursor, LocalDateTime after, Integer limit) {
-        PeriodType periodType = PeriodType.valueOf(period.toUpperCase());
-        boolean ascending = direction != null && direction.equalsIgnoreCase("ASC");
-        int size = limit != null && limit > 0 ? limit : 20;
+    public Slice<BatchUserRating> getBatchUserRatingList(PowerUserRequest request) {
+        boolean ascending = request.direction().equals("ASC");
 
-        LocalDate periodEnd = after != null ? after.toLocalDate() : LocalDate.now();
-        LocalDate start = getPeriodStart(periodType, periodEnd);
 
         var results = queryFactory
             .selectFrom(bur)
             .where(
-                bur.periodType.eq(periodType),
-                bur.periodStart.eq(start),
-                bur.periodEnd.eq(periodEnd),
-                cursorCondition(cursor, after, ascending)
+                bur.periodType.eq(request.toPeriodType()),
+                bur.periodStart.eq(request.setPeriodStart(request.after().toLocalDate())),
+                bur.periodEnd.eq(request.after().toLocalDate()),
+                cursorCondition(request.cursor(), request.after(), ascending)
             )
             .orderBy(scoreOrder(ascending), idOrder(ascending))
-            .limit(size + 1L)
+            .limit(request.limit() + 1L)
             .fetch();
 
-        boolean hasNext = results.size() > size;
+        boolean hasNext = results.size() > request.limit();
         if (hasNext) {
-            results = results.subList(0, size);
+            results = results.subList(0, request.limit());
         }
-        Pageable paging = Pageable.ofSize(size);
+        Pageable paging = Pageable.ofSize(request.limit());
         return new SliceImpl<>(results, paging, hasNext);
-    }
-
-    private LocalDate getPeriodStart(PeriodType periodType, LocalDate periodEnd) {
-        return switch (periodType) {
-            case WEEKLY -> periodEnd.minusDays(6);
-            case MONTHLY -> periodEnd.minusDays(29);
-            case DAILY -> periodEnd;
-            case ALL_TIME -> LocalDate.MIN;
-        };
     }
 
     private OrderSpecifier<?> scoreOrder(boolean ascending) {

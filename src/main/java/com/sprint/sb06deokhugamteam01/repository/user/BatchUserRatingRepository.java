@@ -7,7 +7,8 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface BatchUserRatingRepository extends JpaRepository<BatchUserRating, UUID>, BatchUserRatingRepositoryCustom {
+public interface BatchUserRatingRepository extends JpaRepository<BatchUserRating, UUID>,
+    CustomBatchUserRatingRepository {
 
     Optional<BatchUserRating> findByPeriodTypeAndPeriodStartAndPeriodEndAndUser_Id(
             PeriodType periodType,

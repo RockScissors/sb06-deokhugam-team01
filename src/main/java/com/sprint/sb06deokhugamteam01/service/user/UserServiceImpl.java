@@ -35,17 +35,7 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmail(request.email())) {
             throw new InvalidUserException(detailMap("email", request.email()));
         }
-
-        String sanitizedNickname = request.nickname().trim();
-
-        User user = User.builder()
-            .email(request.email())
-            .nickname(sanitizedNickname)
-            .password(request.password())
-            .createdAt(LocalDateTime.now())
-            .isActive(true)
-            .build();
-
+        User user = User.toEntity(request);
         return userRepository.save(user);
     }
 
@@ -107,9 +97,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public CursorPageResponsePowerUserDto getPowerUserList(PowerUserRequest request) {
-        Slice<BatchUserRating> slice = batchUserRatingRepository.getBatchUserRatingList(
-            request.period(), request.direction(), request.cursor(), request.after(),
-            request.limit());
+        Slice<BatchUserRating> slice = batchUserRatingRepository.getBatchUserRatingList(request);
 
         List<PowerUserDto> content = slice.getContent().stream()
                 .map(PowerUserDto::fromBatchUserRating)
