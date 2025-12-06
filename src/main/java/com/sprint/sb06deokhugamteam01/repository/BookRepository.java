@@ -19,4 +19,8 @@ public interface BookRepository extends BookQRepository {
 
     void deleteById(UUID id);
 
+    @Modifying
+    @Query("DELETE FROM Book b WHERE b.isActive = false")
+    void deleteAllByIsActiveFalse();
+
 }

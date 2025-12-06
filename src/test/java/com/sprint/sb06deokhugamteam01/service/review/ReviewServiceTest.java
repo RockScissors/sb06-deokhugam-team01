@@ -20,7 +20,7 @@ import com.sprint.sb06deokhugamteam01.repository.BookRepository;
 import com.sprint.sb06deokhugamteam01.repository.CommentRepository;
 import com.sprint.sb06deokhugamteam01.repository.review.ReviewLikeRepository;
 import com.sprint.sb06deokhugamteam01.repository.review.ReviewRepository;
-import com.sprint.sb06deokhugamteam01.repository.UserRepository;
+import com.sprint.sb06deokhugamteam01.repository.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

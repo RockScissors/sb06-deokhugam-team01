@@ -16,4 +16,8 @@ public interface ReviewRepository extends JpaRepository<Review, UUID>, ReviewRep
 
     void deleteByBook_Id(UUID bookId);
 
+    @Modifying
+    @Query("DELETE FROM Review r WHERE r.isActive = false")
+    void deleteAllByIsActiveFalse();
+
 }
