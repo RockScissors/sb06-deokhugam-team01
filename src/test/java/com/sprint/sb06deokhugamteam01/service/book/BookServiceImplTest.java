@@ -237,7 +237,7 @@ class BookServiceImplTest {
         });
 
         //then
-        assertEquals("All ready exists ISBN", exception.getMessage());
+        assertEquals("Already exists ISBN", exception.getMessage());
 
     }
 
