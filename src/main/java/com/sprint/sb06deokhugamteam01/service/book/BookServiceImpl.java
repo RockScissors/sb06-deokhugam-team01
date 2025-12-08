@@ -17,6 +17,7 @@ import com.sprint.sb06deokhugamteam01.exception.book.InvalidIsbnException;
 import com.sprint.sb06deokhugamteam01.exception.book.BookNotFoundException;
 import com.sprint.sb06deokhugamteam01.repository.BookRepository;
 import com.sprint.sb06deokhugamteam01.repository.CommentRepository;
+import com.sprint.sb06deokhugamteam01.repository.batch.BatchBookRatingRepository;
 import com.sprint.sb06deokhugamteam01.repository.book.PopularBookQRepository;
 import com.sprint.sb06deokhugamteam01.repository.review.ReviewRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ public class BookServiceImpl implements  BookService {
     private final BookRepository bookRepository;
     private final CommentRepository commentRepository;
     private final ReviewRepository reviewRepository;
+    private final BatchBookRatingRepository batchBookRatingRepository;
     private final PopularBookQRepository popularBookQRepository;
     private final BookSearchService bookSearchService;
     private final OcrService ocrService;
@@ -180,6 +182,8 @@ public class BookServiceImpl implements  BookService {
         if (!bookRepository.existsById(id)) {
             throw new BookNotFoundException(detailMap("id", id));
         }
+
+        batchBookRatingRepository.deleteByBook_Id(id);
 
         //연관관계 매핑된 리뷰들 모두 삭제하기
         List<Review> reviewList = reviewRepository.findByBook_Id(id);
