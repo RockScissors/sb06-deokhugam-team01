@@ -1,6 +1,7 @@
 package com.sprint.sb06deokhugamteam01.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.sb06deokhugamteam01.domain.batch.PeriodType;
 import com.sprint.sb06deokhugamteam01.dto.review.request.CursorPagePopularReviewRequest;
 import com.sprint.sb06deokhugamteam01.dto.review.request.CursorPageReviewRequest;
 import com.sprint.sb06deokhugamteam01.dto.review.request.ReviewCreateRequest;
@@ -182,7 +183,7 @@ class ReviewControllerTest {
 
         // given
         CursorPagePopularReviewRequest request = CursorPagePopularReviewRequest.builder()
-                .period(CursorPagePopularReviewRequest.RankCriteria.DAILY)
+                .period(PeriodType.DAILY)
                 .limit(10)
                 .build();
 
@@ -217,7 +218,7 @@ class ReviewControllerTest {
 
         // given
         CursorPagePopularReviewRequest request = CursorPagePopularReviewRequest.builder()
-                .period(CursorPagePopularReviewRequest.RankCriteria.DAILY)
+                .period(PeriodType.DAILY)
                 .limit(-1)
                 .build();
 

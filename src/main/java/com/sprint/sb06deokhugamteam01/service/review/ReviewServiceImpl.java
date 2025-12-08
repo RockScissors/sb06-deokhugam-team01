@@ -1,6 +1,7 @@
 package com.sprint.sb06deokhugamteam01.service.review;
 
 import com.sprint.sb06deokhugamteam01.domain.ReviewLike;
+import com.sprint.sb06deokhugamteam01.domain.batch.PeriodType;
 import com.sprint.sb06deokhugamteam01.domain.book.Book;
 import com.sprint.sb06deokhugamteam01.domain.Review;
 import com.sprint.sb06deokhugamteam01.domain.User;
@@ -217,10 +218,10 @@ public class ReviewServiceImpl implements ReviewService {
                 = request.direction() != null
                 ? request.direction()
                 : CursorPagePopularReviewRequest.SortDirection.ASC;
-        CursorPagePopularReviewRequest.RankCriteria period
+        PeriodType period
                 = request.period() != null
                 ? request.period()
-                : CursorPagePopularReviewRequest.RankCriteria.DAILY;
+                : PeriodType.DAILY;
 
         boolean descending = (sortDirection == CursorPagePopularReviewRequest.SortDirection.DESC);
 
