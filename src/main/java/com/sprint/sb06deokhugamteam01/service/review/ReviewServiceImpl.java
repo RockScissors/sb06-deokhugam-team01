@@ -16,6 +16,7 @@ import com.sprint.sb06deokhugamteam01.dto.review.response.CursorPageResponsePopu
 import com.sprint.sb06deokhugamteam01.dto.review.response.CursorPageResponseReviewDto;
 import com.sprint.sb06deokhugamteam01.dto.review.response.ReviewDto;
 import com.sprint.sb06deokhugamteam01.dto.review.response.ReviewLikeDto;
+import com.sprint.sb06deokhugamteam01.exception.common.UnauthorizedAccessException;
 import com.sprint.sb06deokhugamteam01.exception.review.InvalidReviewCursorException;
 import com.sprint.sb06deokhugamteam01.exception.review.ReviewAlreadyExistsException;
 import com.sprint.sb06deokhugamteam01.exception.review.ReviewNotFoundException;
@@ -289,7 +290,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         // 작성자 == 요청자인지 검증
         if (!review.getUser().getId().equals(user.getId())) {
-            throw new InvalidUserException(detailMap("userId", requestUserId));
+            throw new UnauthorizedAccessException(detailMap("userId", requestUserId));
         }
 
         if (updateRequest.content() != null) {
@@ -316,7 +317,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         // 작성자 == 요청자인지 검증
         if (!review.getUser().getId().equals(user.getId())) {
-            throw new InvalidUserException(detailMap("userId", requestUserId));
+            throw new UnauthorizedAccessException(detailMap("userId", requestUserId));
         }
         // TODO Book의 reviewCount 1 감소
         // TODO Book의 Rating 업데이트
