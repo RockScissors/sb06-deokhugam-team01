@@ -82,16 +82,6 @@ public class Book {
         this.rating = rating;
     }
 
-    public void increaseReviewCount() {
-        this.reviewCount += 1;
-    }
-
-    public void decreaseReviewCount() {
-        if (this.reviewCount > 0) {
-            this.reviewCount -= 1;
-        }
-    }
-
     public void addNewReview(double score) {
 
         double totalScore = this.rating * this.reviewCount;
