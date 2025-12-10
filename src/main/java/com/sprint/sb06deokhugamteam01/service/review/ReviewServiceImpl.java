@@ -67,8 +67,7 @@ public class ReviewServiceImpl implements ReviewService {
         Book book = bookRepository.findById(request.bookId())
                 .orElseThrow(() -> new BookNotFoundException(detailMap("bookId", request.bookId())));
 
-        Optional<Review> existingReview = reviewRepository.findByBookAndUser(book, user);
-        if (existingReview.isPresent() && existingReview.get().isActive()) {
+        if (reviewRepository.findByBookAndUserAndIsActiveTrue(book, user).isPresent()) {
             Map<String, Object> details = new HashMap<>();
             details.put("userId", user.getId());
             details.put("bookId", book.getId());
