@@ -28,7 +28,7 @@ public class NotificationServiceImpl implements NotificationService {
         Notification optionalNotification = notificationRepository.findById(notificationId)
             .orElseThrow(() -> new NotificationNotFoundException(Map.of("notificationId", notificationId)));
 
-        if(optionalNotification.getUser().getId() != userId) {
+        if(!optionalNotification.getUser().getId().equals(userId)){
             throw new UnauthorizedAccessException(Map.of("userId", userId, "notificationId", notificationId));
         }
 
