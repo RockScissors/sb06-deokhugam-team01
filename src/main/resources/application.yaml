@@ -35,4 +35,5 @@ ocr:
       key: ${OCR_SPACE_API_KEY:aaa}
 log:
   path:
-    archive: /logs/
+    current: /logs/
+    archive: /logs/archive/
