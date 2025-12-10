@@ -31,10 +31,11 @@ public class MapperTest {
         User user = User.builder().id(UUID.randomUUID()).nickname("유저").build();
         Review review = Review.builder().id(UUID.randomUUID())
                 .content("좋은 책입니다. 추천합니다.").user(user).build();
+        String imageUrl = "url";
         given(reviewLikeRepository.existsByUserAndReview(any(), any())).willReturn(true);
 
         // when
-        ReviewDto dto = reviewMapper.toDto(review, user);
+        ReviewDto dto = reviewMapper.toDto(review, user, imageUrl);
 
         // then
         assertThat(dto.content()).isEqualTo(review.getContent());
@@ -47,10 +48,11 @@ public class MapperTest {
         // given
         Review review = Review.builder().id(UUID.randomUUID())
                 .content("좋은 책입니다. 추천합니다.").build();
+        String imageUrl = "url";
         boolean isLiked = false;
 
         // when
-        ReviewDto dto = reviewMapper.toDto(review, isLiked);
+        ReviewDto dto = reviewMapper.toDto(review, isLiked, imageUrl);
 
         // then
         assertThat(dto.content()).isEqualTo(review.getContent());

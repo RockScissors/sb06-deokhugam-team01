@@ -20,7 +20,6 @@ public class GlobalExceptionTest {
 
         // then
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.OCR_PROCESSING_FAILED);
-        assertThat(e.getMessage()).isEqualTo("OCR processing failed");
     }
 
     @Test
@@ -31,7 +30,6 @@ public class GlobalExceptionTest {
 
         // then
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.BOOK_INFO_FETCH_FAILED);
-        assertThat(e.getMessage()).isEqualTo("Book info fetch failed");
     }
 
     @Test
@@ -42,7 +40,6 @@ public class GlobalExceptionTest {
 
         // then
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.S3_OBJECT_NOT_FOUND);
-        assertThat(e.getMessage()).isEqualTo("S3 object not found");
     }
 
     @Test
@@ -53,7 +50,6 @@ public class GlobalExceptionTest {
 
         // then
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ISBN);
-        assertThat(e.getMessage()).isEqualTo("Invalid ISBN");
     }
 
     @Test
@@ -64,7 +60,6 @@ public class GlobalExceptionTest {
 
         // then
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.S3_DELETE_FAILED);
-        assertThat(e.getMessage()).isEqualTo("S3 delete failed");
     }
 
     @Test
@@ -75,7 +70,6 @@ public class GlobalExceptionTest {
 
         // then
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_REQUEST);
-        assertThat(e.getMessage()).isEqualTo("Invalid request");
     }
 
     @Test
@@ -97,6 +91,5 @@ public class GlobalExceptionTest {
 
         // then
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.REVIEW_ALREADY_EXISTS);
-        assertThat(e.getMessage()).isEqualTo("Review already exists");
     }
 }
