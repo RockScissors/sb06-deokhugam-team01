@@ -104,7 +104,9 @@ public class BookServiceImpl implements  BookService {
                             String presignedUrl = s3StorageService.getPresignedUrl(batchBookRating.getBook().getThumbnailUrl());
                             return PopularBookDto.fromEntityWithImageUrl(batchBookRating.getBook(), batchBookRating, presignedUrl);
                         }
-                ).toList())
+                )
+                        .limit(bookSlice.getContent().size() - (bookSlice.hasNext() ? 1 : 0))
+                        .toList())
                 .nextCursor(bookSlice.hasNext() ?
                         bookSlice.getContent().get(bookSlice.getContent().size() -1).getBook().getId().toString() : null)
                 .nextAfter(bookSlice.hasNext() ?
