@@ -14,6 +14,6 @@ public interface ReviewRepositoryCustom {
 
     Slice<Review> getPopularReviews(PopularReviewSearchCondition condition, Pageable pageable);
 
-    void deleteByBookId(UUID bookId);
+    void softDeleteByBookId(UUID bookId);
 
 }

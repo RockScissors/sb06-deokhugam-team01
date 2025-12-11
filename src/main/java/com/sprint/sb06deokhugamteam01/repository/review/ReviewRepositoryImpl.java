@@ -215,7 +215,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
     }
 
     @Override
-    public void deleteByBookId(UUID bookId) {
+    public void softDeleteByBookId(UUID bookId) {
 
         queryFactory.update(qComment)
                 .where(qComment.review.book.id.eq(bookId))

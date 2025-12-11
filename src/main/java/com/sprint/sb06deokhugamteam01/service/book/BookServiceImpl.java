@@ -19,6 +19,7 @@ import com.sprint.sb06deokhugamteam01.exception.book.S3UploadFailedException;
 import com.sprint.sb06deokhugamteam01.repository.BookRepository;
 import com.sprint.sb06deokhugamteam01.repository.CommentRepository;
 import com.sprint.sb06deokhugamteam01.repository.batch.BatchBookRatingRepository;
+import com.sprint.sb06deokhugamteam01.repository.batch.BatchReviewRatingRepository;
 import com.sprint.sb06deokhugamteam01.repository.book.PopularBookQRepository;
 import com.sprint.sb06deokhugamteam01.repository.batch.BatchBookRatingRepository;
 import com.sprint.sb06deokhugamteam01.repository.review.ReviewRepository;
@@ -41,6 +42,7 @@ public class BookServiceImpl implements  BookService {
     private final ReviewRepository reviewRepository;
     private final PopularBookQRepository popularBookQRepository;
     private final BatchBookRatingRepository batchBookRatingRepository;
+    private final BatchReviewRatingRepository batchReviewRatingRepository;
     private final BookSearchService bookSearchService;
     private final OcrService ocrService;
     private final S3StorageService s3StorageService;
@@ -200,7 +202,10 @@ public class BookServiceImpl implements  BookService {
             throw new BookNotFoundException(detailMap("id", id));
         }
 
-        reviewRepository.deleteByBook_Id(id);
+        batchReviewRatingRepository.deleteByReview_IdIn(reviewRepository.findByBook_Id(id).stream()
+                .map(Review::getId).toList());
+        batchBookRatingRepository.deleteByBook_Id(id);
+        reviewRepository.softDeleteByBookId(id);
         book.softDelete();
 
     }
