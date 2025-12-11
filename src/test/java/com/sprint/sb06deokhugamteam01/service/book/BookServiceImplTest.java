@@ -373,7 +373,7 @@ class BookServiceImplTest {
         when(bookRepository.findByIdAndIsActive(bookId, true))
                 .thenReturn(Optional.of(book));
 
-        when(reviewRepository.findByBook_Id(bookId))
+        when(reviewRepository.findIdsByBook_Id(bookId))
                 .thenReturn(emptyList());
 
         //then
