@@ -40,7 +40,7 @@ public class LogUploaderScheduler {
 
         if (logFile.exists() && logFile.isFile()) {
             try {
-                String s3Key = "logs/" + yesterday.getYear() + "/" + yesterday.getMonthValue() + "/" + yesterday.getDayOfMonth() + "/" + logFileName;
+                String s3Key = "logs/" + yesterday.getYear() + "/" + yesterday.getMonthValue() + "/" + logFileName;
 
                 PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                         .bucket(bucket)
