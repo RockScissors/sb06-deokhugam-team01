@@ -48,7 +48,7 @@ jobs:
         uses: cicirello/jacoco-badge-generator@v2
         with:
           generate-branches-badge: true
-          jacoco-csv-file: build/reports/jacoco/test/jacocoTestReposrt.csv
+          jacoco-csv-file: build/reports/jacoco/test/jacocoTestReport.xml
 
       - name: Commit and push badge
         if: success()
@@ -57,9 +57,3 @@ jobs:
           default_author: github_actions
           messasge: 'commit badge'
           add: '*.svg'
-
-      - name: Generate JaCoCo Badge
-        uses: cicirello/jacoco-badge-generator@v2
-        with:
-          generate-branches-badge: 'true'
-          jacoco-csv-file: build/reports/jacoco/test/jacocoTestReport.xml
